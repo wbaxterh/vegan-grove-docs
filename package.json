@@ -34,7 +34,7 @@
     "lint-staged": "^16.1.0",
     "pokedocs": "^0.2.0",
     "secretlint": "^13.0.5",
-    "typescript": "~5.9.2"
+    "typescript": "~7.0.2"
   },
   "lint-staged": {
     "*.{ts,tsx,js,json,css}": "biome check --write",
