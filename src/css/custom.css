@@ -1,0 +1,114 @@
+/**
+ * Site personality beyond branding. The color theme itself (the whole
+ * --ifm-color-primary ladder, light and dark) is compiled by @pokedocs/theme
+ * from the `branding` block in docusaurus.config.ts. Never hand-write Infima
+ * primary variables here.
+ *
+ * Vegan Grove tokens (shared with the web and mobile repos):
+ *   bg #0B0F0C  surface #121A15  text #E6F2EA  muted #8FA89A
+ *   primary dark #3DFF8A  primary light #0E7C3A  accent #FF2BD6  accent-2 #22E5FF
+ */
+
+:root {
+  --vg-bg: #0b0f0c;
+  --vg-surface: #121a15;
+  --vg-text: #e6f2ea;
+  --vg-muted: #8fa89a;
+  --vg-primary-dark: #3dff8a;
+  --vg-primary-light: #0e7c3a;
+  --vg-accent: #ff2bd6;
+  --vg-accent-2: #22e5ff;
+  --vg-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --ifm-code-font-size: 90%;
+}
+
+/* Dark mode is the default: near-black with a green cast. */
+[data-theme="dark"] {
+  --ifm-background-color: var(--vg-bg);
+  --ifm-background-surface-color: var(--vg-surface);
+  --ifm-font-color-base: var(--vg-text);
+  --ifm-color-emphasis-600: var(--vg-muted);
+  --ifm-navbar-background-color: var(--vg-bg);
+  --ifm-footer-background-color: #070a08;
+  --ifm-toc-border-color: #1e2a22;
+  --ifm-link-color: var(--vg-accent-2);
+  --ifm-link-hover-color: var(--vg-primary-dark);
+}
+
+/* Navbar: hairline neon rule under the bar, monospace title. */
+.navbar {
+  border-bottom: 1px solid var(--ifm-color-primary);
+}
+
+.navbar__title {
+  font-family: var(--vg-mono);
+  letter-spacing: 0.04em;
+}
+
+/* Sidebar category labels and doc headings pick up the monospace accent. */
+.menu__list-item-collapsible > .menu__link {
+  font-family: var(--vg-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.markdown h1 {
+  font-family: var(--vg-mono);
+  letter-spacing: -0.01em;
+}
+
+.markdown h2 {
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+  padding-bottom: 0.25rem;
+}
+
+/* Tables: header uses the brand ladder; keep text legible on neon in dark. */
+table th {
+  background: var(--ifm-color-primary-lightest);
+}
+
+[data-theme="dark"] table th {
+  background: var(--ifm-color-primary-darkest);
+  color: var(--vg-bg);
+}
+
+/* Mermaid is rendered at build time with the light theme, so give diagrams a
+ * light card in dark mode instead of tinting the SVG. */
+[data-theme="dark"] .pokedocs-mermaid {
+  background: #f4f8f5;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+/* Status line convention: the first paragraph under an H1 starts with
+ * "Status:"; render it as a monospace badge row. */
+.markdown h1 + p > strong:first-child {
+  font-family: var(--vg-mono);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Hero on the landing page: plain dark surface, neon monospace title, a
+ * single hairline rule below. The title carries the personality. */
+.hero {
+  background-color: var(--vg-bg);
+  border-bottom: 1px solid var(--ifm-color-primary);
+  color: var(--vg-text);
+}
+
+.hero__title {
+  font-family: var(--vg-mono);
+  color: var(--vg-primary-dark);
+  text-shadow: 0 0 18px rgba(61, 255, 138, 0.35);
+}
+
+[data-theme="light"] .hero__title {
+  color: var(--vg-primary-light);
+  text-shadow: none;
+}
+
+[data-theme="light"] .hero {
+  background-color: #f4f8f5;
+  color: #0b0f0c;
+}
