@@ -1,0 +1,24 @@
+version: 1
+# Static docs build on AWS Amplify Hosting (Amazon Linux 2023 image).
+# Mermaid renders to SVG at build time through Playwright's chromium, so the
+# build installs the headless shell and its shared libraries first. The
+# Playwright cache is kept between builds so the browser download runs once.
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm use 24
+        - npm ci
+        - sudo dnf install -y --setopt=strict=0 nss nspr atk at-spi2-atk at-spi2-core cups-libs libdrm libxkbcommon libXcomposite libXdamage libXfixes libXrandr mesa-libgbm pango alsa-lib libXcursor libXi libXtst
+        - npx playwright install chromium-headless-shell
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - ~/.cache/ms-playwright/**/*

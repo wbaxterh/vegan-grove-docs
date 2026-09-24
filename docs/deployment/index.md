@@ -20,7 +20,7 @@ Per the [disclosure policy](/privacy/disclosure-policy), these pages name servic
 | API (`vegan-grove-api`) | EC2 t4g.micro, Ubuntu 24.04 arm64, PM2 behind nginx | `us-east-1` | manual runbook on the API host, see [backend](/deployment/backend) |
 | Web (`vegan-grove-web`) | Amplify Hosting, WEB_COMPUTE | `us-east-1` | push to `main`, see [web app](/deployment/web-app) |
 | Mobile (`vegan-grove-mobile`) | EAS Build, TestFlight, Play internal track | Expo's build cloud | `eas build` on a store profile, see [mobile](/deployment/mobile) |
-| Docs (`vegan-grove-docs`) | GitHub Pages via Actions | GitHub's CDN | push to `main`, see [docs](/deployment/docs) |
+| Docs (`vegan-grove-docs`) | AWS Amplify Hosting (static) | `us-east-1` | push to `main`, see [docs](/deployment/docs) |
 | Database | MongoDB Atlas M0 | `us-east-1` (AWS provider) | none, schema changes ship with the API |
 | Images | S3 bucket behind CloudFront | `us-east-1`, global edge | presigned PUT from clients, no deploy |
 | Video | Bunny Stream | Bunny's CDN | tus upload from clients, no deploy |
@@ -44,7 +44,7 @@ flowchart LR
   Mobile --> Bunny
   Browser --> Tiles["OpenFreeMap tiles"]
   Mobile --> Tiles
-  Docs["GitHub Pages (docs)"]
+  Docs["Amplify Hosting (docs)"]
 ```
 
 Clients never send bytes through the API: images go straight to S3 with a presigned URL and video goes straight to Bunny with a tus token. The API host therefore stays small. Map tiles come from OpenFreeMap directly to the client; the API never sees a viewport.

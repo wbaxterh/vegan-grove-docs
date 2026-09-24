@@ -23,7 +23,7 @@ flowchart LR
   API --> Claude["Anthropic API (Ivy)"]
   Web --> Tiles["OpenFreeMap tiles"]
   Mobile --> Tiles
-  Docs["Docs (GitHub Pages)"]
+  Docs["Docs (Amplify)"]
 ```
 
 ## The four repos
@@ -33,7 +33,7 @@ flowchart LR
 | `vegan-grove-api` | REST API, Socket.IO, workers, the only thing that reads the database | EC2 `us-east-1`, PM2 behind nginx |
 | `vegan-grove-web` | Public site plus the authenticated `/app` area | AWS Amplify Hosting |
 | `vegan-grove-mobile` | iOS and Android app | EAS Build, App Store, Play |
-| `vegan-grove-docs` | This site | GitHub Pages |
+| `vegan-grove-docs` | This site | AWS Amplify Hosting |
 
 See the [repo dependency map](/architecture/repo-dependency-map) for the contracts between them and [ADR-0001](/architecture/adrs/adr-0001-polyrepo) for why four repos and not one.
 

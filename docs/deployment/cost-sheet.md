@@ -23,7 +23,7 @@ The platform is sized to cost about the price of a lunch per month. Every line b
 | Amplify Hosting, WEB_COMPUTE | $1 to $3 | build minutes plus SSR request-seconds and egress; grows with page views and with previews if enabled |
 | MongoDB Atlas M0 | $0 | free tier, see below |
 | EAS Build | $0 | free tier, see below |
-| GitHub Pages, GitHub Actions | $0 | public repo |
+| GitHub Actions (CI only) | $0 | public repo |
 | **Total** | **about $12 to $15** | |
 
 Annual, outside the table: the domain (about $12 a year). The Apple Developer membership ($99 a year) and the Google Play registration ($25 once) are already paid through the maintainer's existing accounts.
@@ -41,7 +41,7 @@ Two usage-based services start near zero and are the first lines to watch:
 |---|---|---|
 | Atlas M0 | 512 MB storage, shared CPU, no backups, 500 connections | the data model is text and ObjectIds, so hundreds of thousands of documents fit; backups are the real gap, and the upgrade to M2 or M10 is a click |
 | EAS Build | 30 builds a month, lower-priority queue | a release week with both platforms and a few previews uses maybe 10 |
-| GitHub Pages | 1 GB site, 100 GB bandwidth a month soft limit | a docs site is megabytes |
+| Amplify Hosting (docs) | billed like the web app: build minutes and GB served | a docs site is megabytes, so cents |
 | GitHub Actions | 2,000 minutes a month for public repos is unlimited | n/a |
 | OpenFreeMap tiles | no key, no quota, fair use | if the project ever ends or changes terms, the map style is open and self-hosting tiles is the fallback, recorded in the [maps ADR](/architecture/adrs/adr-0006-maps) |
 

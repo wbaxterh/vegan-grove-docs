@@ -30,7 +30,7 @@ The four repos exist locally with their initial commits and pass `npm run valida
 - `vegan-grove-api`: Express 5, Mongoose 9, the full data model, auth and places working end to end with tests, every other route mounted as a `501` stub, the companion service and SSE route, PM2 ecosystem file.
 - `vegan-grove-web`: Next 15 App Router with every public route and the `/app` area as stubs, the session route handler and middleware, security headers and CSP, `robots.txt`, `sitemap.xml`, `llms.txt`, `amplify.yml`, one Playwright smoke test.
 - `vegan-grove-mobile`: Expo SDK 57 with the `(auth)` and `(tabs)` groups, the profile stack, the companion modal, the API client and endpoints registry, the auth store and `AuthGate`, the places map, EAS profiles, and the release guard.
-- `vegan-grove-docs`: this site, with the product, privacy, architecture, ADR, feature, engineering, deployment, and roadmap sections, CI and Pages deploy workflows.
+- `vegan-grove-docs`: this site, with the product, privacy, architecture, ADR, feature, engineering, deployment, and roadmap sections, CI workflow and an Amplify build spec.
 
 Privacy notes: the data inventory, threat model, and disclosure policy are published with this release. No member data exists.
 

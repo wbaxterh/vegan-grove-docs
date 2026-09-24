@@ -13,7 +13,7 @@ description: Vegan Grove is four repositories with one shared API, mirroring The
 
 ## Context
 
-The Trick Book runs as four repos: a backend, a mobile app, a website, and a docs site, each with its own CI, ruleset, and deploy target. The author knows that shape well, and the tooling around it (Amplify watching one repo, EAS building one repo, Pages deploying one repo) assumes one deployable per repository. The Trick Book's repo names do not match their roles (`TrickBookFrontend` is the mobile app), which has caused real confusion.
+The Trick Book runs as four repos: a backend, a mobile app, a website, and a docs site, each with its own CI, ruleset, and deploy target. The author knows that shape well, and the tooling around it (Amplify watching one repo per site, EAS building one repo) assumes one deployable per repository. The Trick Book's repo names do not match their roles (`TrickBookFrontend` is the mobile app), which has caused real confusion.
 
 ## Decision
 
@@ -21,7 +21,7 @@ Four repositories under `wbaxterh`, named for their role: `vegan-grove-api`, `ve
 
 ## Alternatives considered
 
-- **Monorepo with a workspace tool.** One PR can change the API and both clients together, and types can be shared as a package. Rejected for now: Amplify, EAS, and Pages each want a repo root, the author would be learning a workspace tool alongside everything else, and a monorepo makes the public-repo story harder (one repo, one license, one secret-scanning surface for four deployables).
+- **Monorepo with a workspace tool.** One PR can change the API and both clients together, and types can be shared as a package. Rejected for now: Amplify and EAS each want a repo root, the author would be learning a workspace tool alongside everything else, and a monorepo makes the public-repo story harder (one repo, one license, one secret-scanning surface for four deployables).
 - **Two repos (api plus a clients monorepo).** Halfway; still needs the workspace tool.
 
 ## Consequences

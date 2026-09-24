@@ -44,7 +44,7 @@ Status: **Scaffolded 2026-09-24**
 | SSO | Sign in with Apple, Google Identity | Email from the verified token only |
 | DNS and certs | Route 53, ACM (Amplify), certbot (API) | |
 | Mobile builds | EAS Build free tier | 30 builds a month |
-| Docs hosting | GitHub Pages | |
+| Docs hosting | AWS Amplify Hosting (static) | Same account and region as the web app |
 
 ## Design tokens
 
