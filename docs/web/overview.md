@@ -35,28 +35,29 @@ Status: **Scaffolded 2026-09-24**
 ```
 src/
   app/
-    layout.tsx               html, ThemeProvider, header, footer
-    page.tsx                 /
-    places/  events/  groves/  media/  guides/    public lists and [slug] pages
-    login/  signup/  privacy/  terms/
-    app/                     authenticated area: layout.tsx plus feed, messages, friends, companion, settings
-    api/session/route.ts     sets and clears the vg_session cookie
-    robots.ts  sitemap.ts    generated at request time
-    llms.txt/route.ts
+    (site)/                public pages under the shared header and footer, plus login and signup
+    app/                   member area: the layout validates the session, then feed, messages, friends, companion, settings
+    api/session/route.ts   the only code that sees the session token; sets and clears vg_session
+    llms.txt/ robots.txt/ sitemap.xml/   route handlers built from src/lib/site.ts
+    globals.css            the --vg-* tokens mapped onto shadcn variables; no other file defines a color
+    layout.tsx             html, ThemeProvider (dark by default), system font stacks
+    not-found.tsx
   components/
-    ui/                      shadcn/ui, generated, edited in place
-    map/PlacesMap.tsx        client component, dynamic import wrapper beside it
-    ...
+    ui/                    shadcn components on Base UI, regenerated with the shadcn CLI
+    places/                places-map.tsx (MapLibre, client only) and its dynamic-import island
+    auth/ app/ events/ media/   forms, member nav, cards, the youtube-nocookie trailer embed
+    screen.tsx             the Context / Action / Support layout every page uses
   lib/
-    api.ts                   the HTTP client, server and browser
-    session.ts               cookie name, read helper for server components
-    utils.ts                 shadcn's cn()
-  middleware.ts              redirects /app/* without a cookie to /login
-  styles/globals.css         tokens, Tailwind layers
-next.config.ts               security headers, CSP
-amplify.yml
-playwright.config.ts
-tests/e2e/smoke.spec.ts
+    api.ts                 apiFetch, the one HTTP client for browser and server
+    api.server.ts          forwards the cookie as a Bearer header for server components
+    session.ts             cookie name and options, shared with the middleware
+    loaders.ts             public-page loaders that never turn an API outage into a 500
+  middleware.ts            redirects /app/* without a cookie to /login?next=
+public/maplibre/           MapLibre worker files, copied on predev and prebuild, gitignored
+scripts/                   copy-maplibre-worker.mjs
+tests/                     smoke.spec.ts (Playwright)
+next.config.ts             CSP, HSTS, nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy
+amplify.yml                Node 24, env allowlist into .env.production, npm ci, next build
 ```
 
 The [routes](/web/routes) page lists every path and what it serves. [Amplify deploy](/web/amplify-deploy) covers `amplify.yml` and the headers.
@@ -66,7 +67,7 @@ The [routes](/web/routes) page lists every path and what it serves. [Amplify dep
 ```bash
 npm run dev          # next dev --turbopack
 npm run validate     # biome check, tsc --noEmit, next build
-npm run test:e2e     # playwright test against a built app
+npm run test:e2e     # playwright smoke against the dev server
 ```
 
 ## Rendering rules

@@ -44,7 +44,8 @@ src/
   theme/tokens.ts
 scripts/
   check-prod-ready.sh    the release guard
-  eas-build-pre-install.sh
+  gen-brand-assets.mjs   regenerates the placeholder brand PNGs
+eas-build-pre-install.sh EAS lifecycle hook that reruns the guard on store profiles
 app.config.ts            bundle id org.vegangrove.app, scheme vegangrove, plugins, env-sourced values
 eas.json                 development, preview, production, testflight, playstore
 ```
@@ -55,7 +56,7 @@ Details: [navigation](/mobile/navigation), [state and data](/mobile/state-and-da
 
 MapLibre is native code, so Expo Go cannot run this app. Day-to-day development uses a development build from the `development` EAS profile installed on a simulator or device, then `npm start` (which runs `expo start --dev-client`). The build is made once per native dependency change, not per code change; JavaScript still hot-reloads.
 
-`ios/` and `android/` are gitignored and never generated in the repo. Native configuration lives in `app.config.ts` and config plugins (`expo-build-properties`, the MapLibre plugin, `expo-notifications`, `expo-secure-store`), and EAS generates the native projects on its build machine. See [mobile deployment](/deployment/mobile).
+`ios/` and `android/` are gitignored and never generated in the repo. Native configuration lives in `app.config.ts` and config plugins (the MapLibre plugin, `expo-notifications`, `expo-secure-store`, `expo-location`), and EAS generates the native projects on its build machine. See [mobile deployment](/deployment/mobile).
 
 ## What the scaffold contains
 

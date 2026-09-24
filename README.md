@@ -50,6 +50,21 @@ npm run validate                  # biome check, tsc, pokedocs check, docusaurus
 
 `validate` is exactly what CI runs on every pull request, alongside a gitleaks scan of the full history. Husky runs Biome on staged code and `secretlint` on every staged file.
 
+To add a page, create the file, add its id to `sidebars.ts` (a page not listed there does not appear), and start it like this:
+
+```markdown
+---
+title: Backend testing
+description: One sentence that search and the agent surface read before the body.
+---
+
+# Backend testing
+
+Status: **Proposed 2026-09-24**
+```
+
+Links are absolute site paths without extension (`/privacy/data-inventory`); `trailingSlash` is false, so a relative link from an index page resolves one level too high. Sequence-diagram messages must not contain `;`, and node labels with parentheses go in quotes. A feature earns a sidebar category exactly when it has an index (the PRD) plus an architecture or spec page.
+
 ## Scripts
 
 | Script | What it does |
@@ -92,7 +107,7 @@ docs/
 src/
   css/custom.css         site personality only; the color ladder is compiled from branding
   pages/index.tsx        landing page driven by customFields.landing in the config
-static/                  logo, favicon, robots.txt, CNAME
+static/                  logo, favicon, robots.txt
 sidebars.ts              the information architecture; a page not listed here does not appear
 docusaurus.config.ts     branding, strict links, edit URL, navbar, footer, landing cards
 .github/                 CODEOWNERS, PR template, dependabot, workflows (ci.yml is the gate)
@@ -100,7 +115,21 @@ docusaurus.config.ts     branding, strict links, edit URL, navbar, footer, landi
 
 ## What works today
 
-- 74 pages across eleven sidebar sections: Product, Privacy, Architecture (with 13 ADRs), Backend, Mobile, Web, Features, Engineering, Deployment, Roadmap, Releases. Every page has a `description`; `validate` is green on a fresh clone.
+- 74 pages across eleven sidebar sections. Every page has a `description`; `validate` is green on a fresh clone.
+
+| Section | Pages | What it holds |
+|---|---|---|
+| Product | 4 | vision, principles, concept map, personas |
+| Privacy | 4 | the promise, the field-by-field data inventory, threat model, disclosure policy |
+| Architecture | 19 | overview, repo dependency map, tech stack, data model, auth and sessions, 13 ADRs plus their index |
+| Backend | 5 | overview, API endpoints, database, configuration, testing |
+| Mobile | 5 | overview, navigation, state and data, API client, build and release |
+| Web | 4 | overview, routes, auth and sessions, Amplify deploy |
+| Features | 15 | overview, places (with data sources and verification), events (with RSVP privacy), groves, friends, feed, messages, media, guides, companion, notifications, action log |
+| Engineering | 8 | workflow, linting and formatting, testing, pre-commit hooks, error handling, logging, agent guide |
+| Deployment | 6 | overview, backend, web app, mobile, docs, cost sheet |
+| Roadmap, Releases | 3 | milestones, open questions, release notes |
+| Intro | 1 | the front door |
 - Mermaid rendered to SVG at build time, so no client-side diagram runtime and no figure that fails when a script is blocked.
 - The agent surface: `/llms.txt`, `/llms-full.txt`, and a Markdown twin beside every HTML page, generated from the same source. A good `description` is what makes it useful.
 - Search index, `sitemap.xml`, `robots.txt`, dark mode by default with a working light mode, and a landing page whose cards come from the config rather than from JSX.
@@ -109,7 +138,7 @@ docusaurus.config.ts     branding, strict links, edit URL, navbar, footer, landi
 ## Not yet
 
 - Every page is `Proposed` or `Scaffolded` (32 and 29 status lines); none is `Audited against code` yet. Treat the feature pages as PRDs, not as descriptions of shipped behavior.
-- The docs-deployment page and the scaffold-era deploy workflow describe the previous hosting target; both are due for a rewrite now that the site publishes through Amplify.
+- The custom domain is not attached yet; until it is, the site is served from Amplify's default hostname and canonical links still point at `docs.vegangrove.org`.
 - Releases has a scaffold entry and nothing shipped. No versioned docs, no i18n.
 - The preset will enforce `description` through `frontmatterSchema` once the published build implements it; until then `pokedocs check` and review carry that rule.
 
