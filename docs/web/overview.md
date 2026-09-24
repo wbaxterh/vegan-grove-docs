@@ -17,7 +17,7 @@ Status: **Scaffolded 2026-09-24**
 | Framework | Next 15, App Router, TypeScript, `src/` directory, Turbopack |
 | Styling | Tailwind 4, shadcn/ui components generated into the repo, `--vg-*` tokens in `globals.css` |
 | Theme | `next-themes`, class strategy, dark by default, light must work |
-| Map | MapLibre GL with the OpenFreeMap `liberty` style, loaded with `dynamic(..., { ssr: false })` |
+| Map | MapLibre GL with the OpenFreeMap `liberty` style, loaded with `dynamic(..., { ssr: false })`. Its tile worker is self-hosted under `public/maplibre/` (copied on `prebuild`) because Turbopack hashes the worker and its shared chunk separately, which breaks the worker's relative import and leaves the map blank. |
 | Lint, format | Biome (the `create-next-app` ESLint option was declined) |
 | E2E | Playwright smoke in `test:e2e`, outside `validate` |
 | Fonts | system UI and system monospace stacks; `next/font` is not used |
