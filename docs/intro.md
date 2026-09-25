@@ -21,7 +21,7 @@ This site is public on purpose. The code, the data inventory, the threat model, 
 | Mobile app | Expo SDK 57, expo-router, MapLibre | `vegan-grove-mobile` | Scaffolded |
 | Docs | PokeDocs (Docusaurus) | `vegan-grove-docs` | This site |
 | Database | MongoDB Atlas | | Not provisioned |
-| Hosting | AWS `us-east-1`: EC2 + PM2, Amplify, S3 + CloudFront, SES | | Not provisioned |
+| Hosting | AWS `us-east-1`: EC2 + PM2, Amplify, S3, SES | | Provisioned: domains live, API host waiting on the database |
 
 ## Start here
 

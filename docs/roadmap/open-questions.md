@@ -14,7 +14,6 @@ Questions that need an answer before or during a milestone. Each has an owner (W
 
 | Question | Options | Settled by |
 |---|---|---|
-| Domain registration | `vegangrove.org` (decided) through Route 53 or the current registrar | Wes registers it |
 | Apple developer team and app record | Reuse The Trick Book's team, new app record `org.vegangrove.app` | Wes creates the record |
 | SES sending domain | `mail.vegangrove.org` subdomain with DKIM, production access request | Wes files the request |
 | AWS IAM | Create a scoped IAM user or role for deploys; the account's root credentials are currently what the CLI uses, which should stop | Wes |
@@ -50,4 +49,4 @@ Questions that need an answer before or during a milestone. Each has an owner (W
 
 ## Settled since the plan
 
-- Domain: `.org`. Repos: public, proprietary license. Hosting: own t4g.micro. Auth: password, magic link, Apple, Google; Proton through magic link. DMs, feed with video, media library, and the companion are in v1 scope. Connections are Friends, not Allies. All on 2026-09-24.
+- Domain: `vegangrove.org` registered through Route 53 on 2026-09-24; web, www, docs, and api records live. Repos: public, proprietary license. Hosting: own t4g.micro. Auth: password, magic link, Apple, Google; Proton through magic link. DMs, feed with video, media library, and the companion are in v1 scope. Connections are Friends, not Allies. All on 2026-09-24.

@@ -43,7 +43,7 @@ Mermaid diagrams are rendered to SVG at build time in a headless chromium, so th
 
 ## Custom domain
 
-Until `docs.vegangrove.org` is registered and attached, the site is served from Amplify's default `amplifyapp.com` hostname. Attaching the domain is an Amplify console step (Hosting, Custom domains) that issues the certificate and, when the zone is in Route 53, writes the records itself. HTTPS is enforced by Amplify by default, which is the step The Trick Book's docs site never took on its previous host.
+`docs.vegangrove.org` is attached to the app: Amplify issued the certificate and, because the zone lives in Route 53 in the same account, wrote the validation and alias records itself. HTTPS is enforced by Amplify, which is the step The Trick Book's docs site never took on its previous host. The default `amplifyapp.com` hostname keeps working as a fallback.
 
 ## Local
 
