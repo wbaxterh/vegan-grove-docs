@@ -6,9 +6,9 @@ sidebar_position: 1
 
 # Places
 
-Status: **Proposed 2026-09-24**, scaffolded in the API (list, get, submit, approve)
+Status: **Proposed 2026-09-24**, scaffolded in the API (list, get, submit, approve); ingest rules added 2026-09-29
 
-Places are The Trick Book's Spots with the sport swapped for the cause. A Place is a sanctuary, restaurant, cafe, grocery, shop, organization, or venue with a pin on the map, a vegan level, and community verification. Places are public and carry no member data, which makes them the safest feature to ship first.
+Places are The Trick Book's Spots with the sport swapped for the cause. A Place is a sanctuary, restaurant, cafe, grocery, shop, community garden, organization, or venue with a pin on the map, a vegan level, and community verification. Places are public and carry no member data, which makes them the safest feature to ship first.
 
 ## Why
 
@@ -16,12 +16,13 @@ An activist new to an area asks three questions: where can I eat, where can I vo
 
 ## What ships in v1
 
-- A map (MapLibre, OpenFreeMap tiles) with clustered pins, filtered by type and vegan level, driven by the viewport's bounding box.
-- A Place page: name, type, vegan level (`full` or `options`), address, hours, website, tags, photos, reviews, upcoming events at this place.
+- A map (MapLibre, OpenFreeMap tiles) with clustered pins, driven by the viewport's bounding box. The default view leans fully vegan: `veganLevel: full` only, chains hidden. "Include vegan options" and "show chains" are opt-in toggles, and fully vegan places sort first everywhere.
+- A Place page: name, type, vegan level (`full` or `options`), address, postcode, hours, phone, website, tags (cuisine, wheelchair, outdoor seating, takeaway, delivery), photos, reviews, upcoming events at this place, and the source attribution.
+- Community gardens (`type: garden`, always `full`) from OpenStreetMap, so a Grove can find a place to grow food together.
 - Submit a place (signed in): pin drop or address search, type, vegan level, a photo. Enters `pending`; an admin approves. The submitter is never shown.
 - Reviews and check-ins: rating, text, month visited, and an opt-in to show the author's handle.
 - Place lists: private collections ("want to try", "volunteer here"), shareable to friends later.
-- Seed data: OpenStreetMap `diet:vegan` tags for the SoCal bounding box (531 tagged places at the time of writing) plus a curated sanctuary list, all imported as `pending` and approved by hand. See [data sources](/features/places/data-sources).
+- Seed data: OpenStreetMap `diet:vegan` tags for the SoCal bounding box (531 tagged places at the time of writing) plus a curated sanctuary list, all imported as `pending` and approved by hand. See [data sources](/features/places/data-sources) and the [ingest rules for places](/ingest/places).
 
 ## Data and visibility
 
@@ -29,7 +30,7 @@ An activist new to an area asks three questions: where can I eat, where can I vo
 
 ## API
 
-`GET /api/places?bbox=&type=&veganLevel=&q=`, `GET /api/places/:slug`, `POST /api/places` (member, pending), `GET`/`POST /api/places/:id/reviews`, `GET`/`POST`/`PATCH`/`DELETE /api/place-lists`, admin `GET /api/admin/places/pending`, `PUT /api/admin/places/:id/approve|reject`. Public reads return `approved` places only; a non-approved place is visible to its submitter and admins.
+`GET /api/places?bbox=&type=&veganLevel=&includeChains=&q=`, `GET /api/places/map-pins` (pins only, no cursor), `GET /api/places/:slug`, `POST /api/places` (member, pending), `POST /api/ingest/places` (ingest key, see [ingest](/ingest)), `GET`/`POST /api/places/:id/reviews`, `GET`/`POST`/`PATCH`/`DELETE /api/place-lists`, admin `GET /api/admin/places/pending`, `PUT /api/admin/places/:id/approve|reject`. Public reads return `approved` places only; a non-approved place is visible to its submitter and admins.
 
 ## Screens
 

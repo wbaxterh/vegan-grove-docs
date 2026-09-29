@@ -6,7 +6,7 @@ sidebar_position: 4
 
 # Data model
 
-Status: **Scaffolded 2026-09-24**
+Status: **Scaffolded 2026-09-24**, ingest fields added 2026-09-29 per the [ingest contract](/ingest)
 
 Every collection is a Mongoose schema in `vegan-grove-api/src/models`, with `timestamps: true`, every reference an `ObjectId`, and every index declared in the schema. That last sentence is the whole lesson from The Trick Book, where 38 collections were shaped by whichever `insertOne` ran first and `userId` was an ObjectId, a string, or a DBRef depending on the file.
 
@@ -54,16 +54,16 @@ flowchart TB
 | `friend_invites` | `userId`, `code`, `expiresAt`, `usesLeft` | unique `code`, TTL `expiresAt` |
 | `groves` | `name`, `slug`, `area`, `description`, `memberCount` | unique `slug`, `area` |
 | `grove_members` | `groveId`, `userId`, `role` | unique `groveId + userId`, `userId` |
-| `organizations` | `name`, `slug`, `type`, `description`, `website?`, `verified`, `adminUserIds[]` | unique `slug` |
+| `organizations` | `name`, `slug`, `type`, `description`, `website?`, `socials` (handles only), `area?`, `verified`, `adminUserIds[]`, plus provenance | unique `slug`, unique `source + sourceId` |
 
 ### Places and events
 
 | Collection | Key fields | Indexes |
 |---|---|---|
-| `places` | `name`, `slug`, `type`, `veganLevel`, `location` (GeoJSON Point), `address`, `city`, `area`, `tags[]`, `photoKeys[]`, `approvalStatus`, `submittedBy?`, `source`, `osmId?`, `ratingAvg`, `reviewCount` | unique `slug`, 2dsphere `location`, `approvalStatus + type`, sparse unique `osmId` |
+| `places` | `name`, `slug`, `type` (now including `garden`), `veganLevel`, `location` (GeoJSON Point), `address`, `city`, `postcode`, `area` (derived from coordinates), `website`, `phone`, `hours`, `tags[]`, `description`, `chain`, `photoKeys[]`, `approvalStatus`, `submittedBy?`, `ratingAvg`, `reviewCount`, plus [provenance](#provenance-on-ingested-collections) | unique `slug`, 2dsphere `location`, `approvalStatus + type`, `approvalStatus + veganLevel + chain`, unique `source + sourceId`, sparse unique `osmId` (legacy, equal to `sourceId` on OSM rows) |
 | `place_reviews` | `placeId`, `userId`, `rating`, `content`, `visitedMonth`, `showHandle`, `status` | `placeId + createdAt`, `userId` |
 | `place_lists` | `userId`, `name`, `placeIds[]`, `isPublic` | `userId` |
-| `events` | `title`, `slug`, `type`, `startsAt`, `endsAt`, `location`, `placeId?`, `venueName`, `address`, `detailsAfterRsvp`, `hostType`, `hostId`, `description`, `coverKey?`, `visibility`, `rsvpCount`, `status`, `createdBy` | unique `slug`, 2dsphere `location`, `startsAt + status`, `hostType + hostId` |
+| `events` | `title`, `slug`, `type`, `startsAt`, `endsAt`, `location?` (absent on an ingested event with no coordinates), `placeId?`, `venueName`, `address`, `detailsAfterRsvp`, `hostType`, `hostId`, `description`, `coverKey?`, `visibility`, `rsvpCount`, `status` (`draft`, `pending`, `published`, `cancelled`; `pending` is the ingest landing state), `createdBy?` (absent on ingested events), plus provenance | unique `slug`, 2dsphere `location`, `startsAt + status`, `hostType + hostId`, unique `source + sourceId` |
 | `event_rsvps` | `eventId`, `userId`, `status` | unique `eventId + userId`, `userId` |
 
 ### Feed
@@ -87,8 +87,8 @@ flowchart TB
 
 | Collection | Key fields | Indexes |
 |---|---|---|
-| `media_items` | `title`, `slug`, `kind`, `year`, `synopsis`, `posterKey?`, `watchLinks[]`, `trailerYoutubeId?`, `tags[]`, `featured`, `status` | unique `slug`, `status + featured` |
-| `guides` | `title`, `slug`, `category`, `body`, `status` | unique `slug`, `category` |
+| `media_items` | `title`, `slug`, `kind`, `year`, `synopsis`, `posterKey?`, `watchLinks[]`, `trailerYoutubeId?`, `tags[]`, `externalIds { tmdb, wikidata, imdb }`, `featured`, `status`, plus provenance | unique `slug`, `status + featured`, unique `source + sourceId` |
+| `guides` | `title`, `slug`, `category`, `summary`, `body`, `sources[] { title, url, license }`, `status`, plus provenance | unique `slug`, `category`, unique `source + sourceId` |
 | `action_log` | `userId`, `type`, `eventId?`, `hours?`, `note?`, `occurredAt` | `userId + occurredAt` |
 | `companion_conversations` | `userId`, `messages[]`, `pinned`, `expiresAt?` | `userId`, TTL `expiresAt` |
 
@@ -99,6 +99,10 @@ flowchart TB
 | `push_tokens` | `userId`, `token`, `platform`, `deadAt?` | unique `token`, TTL `deadAt` |
 | `notification_preferences` | `userId`, `eventReminders`, `friendRequests`, `messages`, `quietHours?` | unique `userId` |
 | `scheduled_notifications` | `userId`, `kind`, `payload`, `scheduledFor`, `status`, `idempotencyKey` | unique `idempotencyKey`, `scheduledFor + status` |
+
+## Provenance on ingested collections
+
+`places`, `events`, `organizations`, `media_items`, and `guides` can be written by the [ingest endpoint](/ingest). Each carries the same five fields: `source` (a string id such as `osm`, `curated`, `ics:<org-slug>`, `wikidata`, `bot:grokbot`), `sourceId` (stable within the source), `sourceUrl?`, `lastSeenAt`, and `adminEdited: string[]`, the field paths an admin changed through the admin routes. The unique index on `source + sourceId` is the upsert key. It is a partial index over rows that have a `sourceId`, so member-submitted places (`source: user`) are unaffected. An ingest write sets only fields absent from `adminEdited` and never lowers a moderation state. None of the five fields references a member.
 
 ## Conventions
 

@@ -58,6 +58,9 @@ Shapes only. Values are never written anywhere public.
 | `APPLE_CLIENT_ID` | Sign in with Apple audience | optional |
 | `GOOGLE_CLIENT_IDS` | Google Sign-In audiences | comma-separated, optional |
 | `OVERPASS_URL` | Overpass mirror for the OSM seed | URL |
+| `INGEST_KEY` | the `X-Ingest-Key` value for [ingest](/ingest); the routes answer `503` until it is set | random string, stored as a secret parameter in production |
+| `TRUSTED_SOURCES` | ingest source ids whose rows land approved, published, or verified | comma-separated, default empty |
+| `TMDB_API_KEY` | media enrichment script only | optional |
 | `STATS_CACHE_TTL_MS` | `/api/stats` cache | integer, default 5 minutes |
 | `REMINDER_TICK_MS` | reminder worker interval | integer |
 

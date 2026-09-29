@@ -6,9 +6,9 @@ sidebar_position: 2
 
 # Place data sources
 
-Status: **Proposed 2026-09-24**, importer stubbed in the API
+Status: **Proposed 2026-09-24**, first import run 2026-09-29; ingest rules on the [ingest places](/ingest/places) page
 
-Three sources, in order of trust: curated, member-submitted, imported. All three land as `pending` and are approved by an admin before they appear.
+Three sources, in order of trust: curated, member-submitted, imported. All three land as `pending` and are approved by an admin before they appear, unless the source is listed in `TRUSTED_SOURCES` ([ingest contract](/ingest)). Every imported row carries `source` and `sourceId`; on OSM rows `sourceId` is the `osmId`.
 
 ## Curated
 
@@ -42,6 +42,18 @@ Rules:
 - `--dry-run` prints counts only. `--approve` exists for the first import of a curated source: new rows land approved and existing pending OSM rows are promoted, because a map with zero places helps nobody and the verification flow handles corrections from there. The importer never runs in CI and never against production without a human in the loop.
 - The first production import (2026-09-29) ran with `--approve`: 546 OSM places plus 3 hand-checked sanctuaries from `scripts/data/sanctuaries.json`.
 
+The importer is moving to `scripts/ingest/` and will POST to `POST /api/ingest/places` instead of writing to the database, with these additions from the [ingest contract](/ingest/places):
+
+- The default map and list lean fully vegan: `full` sorts first and "include vegan options" is an opt-in toggle.
+- `amenity=fast_food` is imported only when `diet:vegan=only`.
+- A `brand` or `brand:wikidata` tag sets `chain: true`. Chains are hidden by default and never deleted.
+- Richer fields: `phone`, `postcode`, `opening_hours`, and `cuisine`, `wheelchair`, `outdoor_seating`, `takeaway`, `delivery` as `key:value` tags, plus a generated one-sentence description when OSM has none.
+- `area` is derived from coordinates, never from the free-text city.
+
+### Community gardens
+
+A second query, `leisure=garden` with `garden:type=community` plus named `landuse=allotments`, imports gardens as `type: garden`, `veganLevel: full`. Unnamed allotments are skipped.
+
 Attribution: OpenStreetMap data is ODbL. Every Place with `source: 'osm'` shows "Data from OpenStreetMap contributors" on its page, and the map itself carries the OSM attribution through the tile style.
 
 ## What is not a source
@@ -52,4 +64,4 @@ Attribution: OpenStreetMap data is ODbL. Every Place with `source: 'osm'` shows 
 
 ## Refresh
 
-A quarterly manual run of the importer with `--dry-run`, review of the diff, then a real run. New OSM places enter as `pending`.
+Quarterly: a run of the importer with `--dry-run`, review of the counts, then a real run. New OSM places enter as `pending`. The schedule and the stop conditions for an automated run are in the [bot runbook](/ingest/bot-runbook).

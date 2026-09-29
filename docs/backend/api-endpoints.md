@@ -6,13 +6,13 @@ sidebar_position: 2
 
 # API endpoints
 
-Status: **Scaffolded 2026-09-24**
+Status: **Scaffolded 2026-09-24**, ingest endpoint and public reads added 2026-09-29 per the [ingest contract](/ingest)
 
 All routes live under `/api` on `https://api.vegangrove.org`; health is `/healthz`. Auth is `Authorization: Bearer <session token>`. Every error is `{ error: { code, message } }` ([error handling](/engineering/error-handling)). Every list is `{ items, nextCursor }` with an opaque cursor over `_id`; there is no `page` or `skip`, and a bad cursor is a `400 invalid_cursor`.
 
-Auth levels: **public** (no session), **member** (any session), **organizer** (grove organizer or organization admin for the host), **admin** (`role: admin`, checked in the database per request).
+Auth levels: **public** (no session), **member** (any session), **organizer** (grove organizer or organization admin for the host), **admin** (`role: admin`, checked in the database per request), **ingest** (the `X-Ingest-Key` header, compared in constant time against `INGEST_KEY`; it writes only through `/api/ingest/*` and reads nothing).
 
-**Scaffold status:** auth, me, places, admin place approval, healthz, and stats are implemented with tests. Every other route is mounted, validates its input, and returns `501 { error: { code: 'not_implemented' } }` until its milestone ([milestones](/roadmap/milestones)).
+**Scaffold status:** auth, me, places, admin place approval, healthz, stats, the public reads for events, organizations, groves, media, and guides, and the ingest endpoint are implemented with tests. Every other route is mounted, validates its input, and returns `501 { error: { code: 'not_implemented' } }` until its milestone ([milestones](/roadmap/milestones)).
 
 ## Auth and account (implemented)
 
@@ -44,24 +44,25 @@ Place and event responses carry `location` as `{ lng, lat }`. GeoJSON (`{ type: 
 
 | Route | Auth | Note |
 |---|---|---|
-| `GET /api/places?bbox=w,s,e,n&type=&q=&cursor=` | public | approved places only |
-| `GET /api/places/:slug` | public | |
+| `GET /api/places?bbox=w,s,e,n&type=&veganLevel=&includeChains=&q=&cursor=&limit=` | public | approved places only; `veganLevel` defaults to `full`, chains hidden unless `includeChains=true`, fully vegan places sort first |
+| `GET /api/places/map-pins?bbox=w,s,e,n&type=&veganLevel=&includeChains=` | public | pins only (`slug`, `name`, `type`, `veganLevel`, `chain`, `location`), no cursor, capped at 1,000 with `truncated: true` past the cap |
+| `GET /api/places/:slug` | public | the full record with `phone`, `postcode`, `hours`, `tags`, and the source attribution |
 | `POST /api/places` | member | created as `pending` |
 | `GET`, `POST /api/places/:id/reviews` | public, member | 501 |
 | `GET`, `POST /api/place-lists`, `PATCH`, `DELETE /api/place-lists/:id` | member | private by default, 501 |
 
-## Events, groves, organizations
+## Events, groves, organizations (public reads implemented)
 
 | Route | Auth | Note |
 |---|---|---|
-| `GET /api/events?from=&to=&area=&groveId=&cursor=` | public | visibility-filtered by caller |
+| `GET /api/events?from=&to=&area=&type=&groveId=&cursor=&limit=` | public | published only, visibility-filtered by caller, upcoming first |
 | `GET /api/events/:slug` | public | |
 | `POST /api/events`, `PATCH /api/events/:id` | organizer | |
 | `POST`, `DELETE /api/events/:id/rsvp` | member | |
 | `GET /api/events/:id/attendees` | organizer | everyone else sees counts only |
-| `GET /api/groves`, `GET /api/groves/:slug` | public | |
+| `GET /api/groves`, `GET /api/groves/:slug` | public | the ten regional Groves, member counts only |
 | `POST /api/groves/:id/join`, `DELETE /api/groves/:id/leave` | member | |
-| `GET /api/organizations`, `GET /api/organizations/:slug` | public | `adminUserIds` never in the response |
+| `GET /api/organizations?type=&area=&q=&cursor=&limit=`, `GET /api/organizations/:slug` | public | verified first; `adminUserIds` never in the response |
 
 ## Friends, feed, posts
 
@@ -88,11 +89,33 @@ Place and event responses carry `location` as `{ lng, lat }`. GeoJSON (`{ type: 
 | `GET`, `POST /api/conversations` | member | |
 | `GET`, `POST /api/conversations/:id/messages` | member | encrypted at rest, 90 day TTL |
 | Socket.IO `/messages` | member | rooms `user:<id>`, `conversation:<id>` |
-| `GET /api/media?kind=&tag=&cursor=`, `GET /api/media/:slug` | public | |
-| `GET /api/guides?category=`, `GET /api/guides/:slug` | public | |
+| `GET /api/media?kind=&tag=&cursor=&limit=`, `GET /api/media/:slug` | public | published only, featured first; implemented |
+| `GET /api/guides?category=&cursor=&limit=`, `GET /api/guides/:slug` | public | published only; implemented |
 | `GET`, `POST /api/actions`, `DELETE /api/actions/:id` | member | private log |
 | `POST /api/companion/chat` `{ conversationId?, message }` | member | SSE stream, rate limited |
 | `GET /api/companion/conversations`, `POST .../:id/pin`, `DELETE .../:id` | member | |
+
+## Ingest (implemented 2026-09-29)
+
+| Route | Auth | Note |
+|---|---|---|
+| `POST /api/ingest/:resource` `{ source, items[] }` | ingest or admin | `resource` is `places`, `events`, `organizations`, `media`, or `guides`; at most 200 items; upsert on `(source, sourceId)` |
+
+Responses: `200 { inserted, updated, unchanged, rejected: [] }` when every item was written, `207` with `rejected: [{ index, sourceId, errors }]` when some were not, `400 validation_error` for a bad envelope, `401 unauthorized` for a wrong key, `429 rate_limited` past 60 calls per 15 minutes per key, `503 not_configured` until `INGEST_KEY` is set. The item schemas and the moderation rules are in [Data ingest](/ingest).
+
+## List query parameters
+
+Every list takes `cursor` and `limit` (1 to 100, default 50). The rest are per resource.
+
+| List | Filters | Defaults |
+|---|---|---|
+| `/api/places` | `bbox` (required), `type`, `veganLevel` (`full`, `options`, `all`), `includeChains`, `q` | `veganLevel=full`, `includeChains=false`, `full` sorts first |
+| `/api/places/map-pins` | as places, without `q` and without a cursor | capped at 1,000 |
+| `/api/events` | `from`, `to`, `area`, `type`, `groveId` | upcoming, published, visible to the caller |
+| `/api/organizations` | `type`, `area`, `q` | verified first |
+| `/api/groves` | none | all |
+| `/api/media` | `kind`, `tag` | published, featured first |
+| `/api/guides` | `category` | published |
 
 ## Admin
 

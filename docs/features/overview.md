@@ -12,7 +12,7 @@ Every feature below maps to a Trick Book concept in the [concept map](/product/c
 
 | Feature | Loop step | What it is | Visibility | Milestone |
 |---|---|---|---|---|
-| [Places](/features/places) | Plan | Sanctuaries, restaurants, cafes, groceries, shops, orgs, venues on a map | Public, non-personal | M1 |
+| [Places](/features/places) | Plan | Sanctuaries, restaurants, cafes, groceries, shops, gardens, orgs, venues on a map | Public, non-personal | M1 |
 | [Events](/features/events) | Plan, Act | Protests, vigils, outreach, potlucks, sanctuary days, screenings | Public listing, private RSVP | M2 |
 | [Groves](/features/groves) | Plan, Share | Local chapters by region | Public page, private membership | M2 |
 | [Friends](/features/friends) | Share | Mutual connections by invite code | Private | M3 |

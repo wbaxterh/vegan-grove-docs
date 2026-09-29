@@ -8,7 +8,7 @@ sidebar_position: 1
 
 Status: **Scaffolded 2026-09-24**
 
-Vegan Grove is a privacy-first vegan community and activism platform for Southern California. Every member is an activist. The app helps them find sanctuaries, vegan businesses, and events, meet each other safely, and get out the door and act.
+Vegan Grove is a privacy-first vegan community and activism platform for Southern California. Every member is an activist. The app helps them find sanctuaries, vegan businesses, community gardens, and events, meet each other safely, and get out the door and act.
 
 This site is public on purpose. The code, the data inventory, the threat model, and the roadmap are all here so anyone can check how member data is handled. What is never here: who the members are, or anything that identifies the machines the platform runs on. See the [disclosure policy](/privacy/disclosure-policy).
 
@@ -29,6 +29,7 @@ This site is public on purpose. The code, the data inventory, the threat model, 
 - **Privacy:** the [promise](/privacy), the [data inventory](/privacy/data-inventory), and the [threat model](/privacy/threat-model).
 - **Architecture:** the [overview](/architecture/overview), the [repo dependency map](/architecture/repo-dependency-map), and the [ADRs](/architecture/adrs).
 - **Features:** [overview](/features/overview), then Places, Events, Groves, Friends, Feed, Messages, Media, Guides, Ivy, Notifications.
+- **Data ingest:** the [contract](/ingest) that scripts and the automation bot follow to feed public data, and the [bot runbook](/ingest/bot-runbook).
 - **Engineering and deployment:** [engineering standards](/engineering/overview) and the [deployment overview](/deployment).
 
 ## Repositories
