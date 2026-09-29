@@ -32,6 +32,9 @@ The last two are the **permission boundary** and they are not optional. A PR tha
 
 `validate` for web is Biome, `tsc`, and `next build`. The build is a real test: it renders every static route, type-checks route handlers, and fails on a bad `metadata` export.
 
+
+**Contract fixtures (added after the first real data).** The web suite starts a mock of the API (`tests/fixtures/mock-api.mjs`) that answers with fixtures in the API's real response shapes, and points the Next dev server at it. Two bugs reached production on 2026-09-29 that no build or type check could catch: the client typed `location` as GeoJSON while the API serializes `{ lng, lat }`, and the detail page read the single-resource envelope `{ place: {...} }` as if it were the place. Both are now pinned by a marker rendered from `{ items }`, a detail page rendered from `{ place }`, and a 404 for an unknown slug. The rule: any client type that mirrors an API response needs a test that renders a fixture in the server's actual shape; an empty-result smoke test proves nothing.
+
 ## Mobile: typecheck and the release guard
 
 There is no unit suite in the scaffold. `validate` is Biome, `tsc --noEmit`, and `check:prod`, the script that fails on `localhost`, live keys, and private IP ranges in the source tree. `tsc` over an expo-router app catches most of what a shallow component test would, and the release guard catches the mistake that actually ships to a store. See [build and release](/mobile/build-and-release).
