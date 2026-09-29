@@ -105,6 +105,19 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Data ingest',
+      link: { type: 'doc', id: 'ingest/index' },
+      items: [
+        'ingest/places',
+        'ingest/events',
+        'ingest/organizations',
+        'ingest/media',
+        'ingest/guides',
+        'ingest/bot-runbook',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Engineering',
       items: [
         'engineering/overview',
