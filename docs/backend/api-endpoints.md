@@ -39,6 +39,9 @@ Auth levels: **public** (no session), **member** (any session), **organizer** (g
 
 ## Places (implemented)
 
+Place and event responses carry `location` as `{ lng, lat }`. GeoJSON (`{ type: 'Point', coordinates: [lng, lat] }`) exists only inside the database for the 2dsphere index; clients never see or send it. Bounding boxes go in as `bbox=west,south,east,north`. The web smoke test renders a marker from a fixture in exactly this shape so the two repos cannot drift apart silently again.
+
+
 | Route | Auth | Note |
 |---|---|---|
 | `GET /api/places?bbox=w,s,e,n&type=&q=&cursor=` | public | approved places only |
