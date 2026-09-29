@@ -20,8 +20,8 @@ This site is public on purpose. The code, the data inventory, the threat model, 
 | Web app | Next 15 (App Router), Tailwind 4, MapLibre | `vegan-grove-web` | Scaffolded |
 | Mobile app | Expo SDK 57, expo-router, MapLibre | `vegan-grove-mobile` | Scaffolded |
 | Docs | PokeDocs (Docusaurus) | `vegan-grove-docs` | This site |
-| Database | MongoDB Atlas | | Not provisioned |
-| Hosting | AWS `us-east-1`: EC2 + PM2, Amplify, S3, SES | | Provisioned: domains live, API host waiting on the database |
+| Database | MongoDB Atlas (M0, `us-east-1`) | | Provisioned, seeded with 549 places |
+| Hosting | AWS `us-east-1`: EC2 + PM2, Amplify, S3, SES | | Live: `api.vegangrove.org`, `vegangrove.org`, `docs.vegangrove.org` |
 
 ## Start here
 

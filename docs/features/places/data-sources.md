@@ -20,7 +20,7 @@ Any signed-in member can submit a place with a pin, a type, a vegan level, and a
 
 ## OpenStreetMap
 
-OpenStreetMap tags places with `diet:vegan=yes` (vegan options) and `diet:vegan=only` (fully vegan). A bounding box over Southern California (roughly Ventura to the Mexican border, the coast to the Inland Empire) contained 531 such places on 2026-09-24. This is the seed for restaurants, cafes, groceries, and shops.
+OpenStreetMap tags places with `diet:vegan=yes` (vegan options) and `diet:vegan=only` (fully vegan). A bounding box over Southern California (roughly Ventura to the Mexican border, the coast to the Inland Empire) contained 546 usable places on 2026-09-29, the day of the first import. This is the seed for restaurants, cafes, groceries, and shops.
 
 The importer is `scripts/seed-places-osm.ts` in the API repo:
 
@@ -39,7 +39,8 @@ Rules:
 - `diet:vegan=only` to `veganLevel: 'full'`, `yes` to `'options'`.
 - Upsert by `osmId` so re-runs update rather than duplicate. Existing approved places keep their approval; changed coordinates or names are flagged for review, not overwritten.
 - The importer sends a descriptive `User-Agent` and runs against the Kumi Systems mirror, because the main Overpass instance refuses generic clients.
-- `--dry-run` prints counts only. The importer never runs in CI and never against production without a human in the loop.
+- `--dry-run` prints counts only. `--approve` exists for the first import of a curated source: new rows land approved and existing pending OSM rows are promoted, because a map with zero places helps nobody and the verification flow handles corrections from there. The importer never runs in CI and never against production without a human in the loop.
+- The first production import (2026-09-29) ran with `--approve`: 546 OSM places plus 3 hand-checked sanctuaries from `scripts/data/sanctuaries.json`.
 
 Attribution: OpenStreetMap data is ODbL. Every Place with `source: 'osm'` shows "Data from OpenStreetMap contributors" on its page, and the map itself carries the OSM attribution through the tile style.
 
