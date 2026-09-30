@@ -88,6 +88,10 @@ Every script that reads the file goes through one mapper (`toItem` in the seed s
 
 `seed:media:collections` runs on the API host (it needs the database), after the three ingest steps, as part of the [data refresh](/ingest/bot-runbook). It upserts the shelves in `scripts/data/media-collections.json` by slug, resolves each shelf's titles to the rows the seed created, sets `featured` on the titles the seed flags, and with `--prune-duplicates` removes a second copy of a curated title left by an earlier mapper mismatch, keeping the row the seed owns. A title the library does not have yet is skipped with a log line and picked up on the next run. Bots never run this step.
 
+## Run the media steps together
+
+`ingest:media:seed`, `ingest:media:wikidata` and `ingest:media:tmdb` write the same rows in turn, each owning different fields. The seed re-sends the editorial layer (tags, warnings, official site, the free official stream, actions) and so replaces `watchLinks` with the curated links and drops the two attribution tags until the TMDB step runs again. Run the three in that order, as the [automation](/ingest/automations) and the host's data refresh do; a seed run on its own leaves the library without providers until the next TMDB pass. A field a script does not send is never touched, so a run without a synopsis keeps the one TMDB wrote.
+
 ## What is never done
 
 - No film is hosted or proxied. `watchLinks` leave the app.
