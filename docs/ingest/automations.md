@@ -55,7 +55,7 @@ Purpose: pull every upcoming event from the organisations on the allowlist, expa
 
 ```cron
 # events refresh, daily, 04:15 Pacific
-15 4 * * *  cd $VG_API && npm run --silent ingest:events:ics && npm run --silent ingest:events:jsonld && npm run --silent ingest:events:mobilize && npm run --silent ingest:events:tribe && npm run --silent ingest:events:json
+15 4 * * *  cd $VG_API && npm run --silent ingest:events:ics && npm run --silent ingest:events:jsonld && npm run --silent ingest:events:mobilize && npm run --silent ingest:events:tribe && npm run --silent ingest:events:json && npm run --silent ingest:events:dxe
 ```
 
 | Step | Command | Sources today | Trusted? |
@@ -65,6 +65,7 @@ Purpose: pull every upcoming event from the organisations on the allowlist, expa
 | 3 | `npm run --silent ingest:events:mobilize` | The Humane League (public Mobilize feed; California and virtual events only) | yes, `PUBLIC` and `APPROVED` events only |
 | 4 | `npm run --silent ingest:events:tribe` | Plant Based Treaty (The Events Calendar REST) | yes |
 | 5 | `npm run --silent ingest:events:json` | Sea Shepherd (its own static events file; California only) | yes |
+| 6 | `npm run --silent ingest:events:dxe` | Direct Action Everywhere chapters; every entry is `enabled: false` until the owner decides, so the step logs four skips and exits clean | no, `pending` if ever enabled |
 
 Sources that exist in the allowlist but are switched off until the owner decides are listed on the [events page](/ingest/events#decisions-awaiting-the-owner): Direct Action Everywhere's chapter feed (its data is synced from Facebook by DxE itself), the Vegan Street Fair listing on a ticketing platform, and the San Diego VegFest calendar, which mixes in non-vegan events and needs its title filter confirmed.
 
