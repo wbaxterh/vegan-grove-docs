@@ -50,8 +50,19 @@ ORDER BY DESC(?year)
 | `synopsis` | `overview` | a draft only; admins rewrite it in the app's own words before publishing |
 | `posterKey` | `poster_path` | the script downloads, re-encodes, and uploads to the media bucket under `media/posters/` plus the `sourceId`, then sends only the key. The API never fetches a remote image. |
 | `watchLinks` | watch providers for region `US`: `flatrate`, `free`, `rent`, `buy` | `{ provider, url }` where `url` is the title's watch page from the same response, since providers expose no deep links |
-| `trailerYoutubeId` | videos of type `Trailer` on YouTube, official first | the client embeds through `youtube-nocookie.com` and loads on click only |
-| `year` | `release_date` | only when Wikidata had none |
+| `backdropKey` | `backdrop_path` | same rule as the poster, under `media/backdrops/` |
+| `trailerYoutubeId` | videos of type `Trailer` on YouTube, official first, then any trailer, then a teaser | the client embeds through `youtube-nocookie.com` and loads on click only |
+| `year`, `releaseDate` | `release_date` | year only when Wikidata had none |
+| `tagline` | `tagline` | shown under the title on the item page |
+| `runtimeMinutes` | `runtime` | rounded |
+| `directors` | credits crew with job `Director` | at most ten, deduplicated |
+| `featuring` | credits cast in billing order | at most six names; documentaries list the people on screen |
+| `genres` | `genres[].name` | at most ten |
+| `rating`, `ratingCount` | `vote_average`, `vote_count` | one decimal; omitted when there are no votes |
+| `contentRating` | the US certification from `release_dates` | omitted when the US has none |
+| `originalLanguage` | `original_language` | ISO 639-1 |
+
+All of these ride on one request per film (`append_to_response=videos,credits,release_dates`), then one more for watch providers. A curated `year`, `synopsis` or `trailerYoutubeId` is never overwritten; the rest is source-owned and refreshes on every run unless an admin edited it.
 
 Watch providers require the line "Watch providers data by JustWatch" wherever `watchLinks` render. The client shows it on the item page; the ingest sets nothing for it.
 
