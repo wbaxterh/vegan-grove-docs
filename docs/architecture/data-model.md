@@ -87,7 +87,10 @@ flowchart TB
 
 | Collection | Key fields | Indexes |
 |---|---|---|
-| `media_items` | `title`, `slug`, `kind`, `year`, `synopsis`, `posterKey?`, `watchLinks[]`, `trailerYoutubeId?`, `tags[]`, `externalIds { tmdb, wikidata, imdb }`, `featured`, `status`, plus provenance | unique `slug`, `status + featured`, unique `source + sourceId` |
+| `media_items` | `title`, `slug`, `kind`, `year`, `releaseDate?`, `synopsis`, `tagline?`, `posterKey?`, `backdropKey?`, `runtimeMinutes?`, `directors[]`, `featuring[]`, `genres[]`, `rating?`, `ratingCount?`, `contentRating?`, `originalLanguage?`, `watchLinks[] { provider, url, access }`, `trailerYoutubeId?`, `officialSite?`, `tags[]`, `contentWarnings[]`, `actions[] { label, url, type, org? }`, `stats { saves, moved, acted }`, `externalIds { tmdb, wikidata, imdb }`, `featured`, `status`, plus provenance | unique `slug`, `status + featured + _id`, `status + year + _id`, `status + tags`, `status + genres`, `status + watchLinks.access`, unique `source + sourceId` |
+| `media_collections` | `slug`, `name`, `description`, `order`, `published`, `itemIds[]` (ordered) | unique `slug`, `published + order` |
+| `saved_media` | `mediaId`, `userId` | unique `mediaId + userId`, `userId + _id` |
+| `media_reactions` | `mediaId`, `userId`, `type` (`moved`, `acted`) | unique `mediaId + userId + type` |
 | `guides` | `title`, `slug`, `category`, `summary`, `body`, `sources[] { title, url, license }`, `status`, plus provenance | unique `slug`, `category`, unique `source + sourceId` |
 | `action_log` | `userId`, `type`, `eventId?`, `hours?`, `note?`, `occurredAt` | `userId + occurredAt` |
 | `companion_conversations` | `userId`, `messages[]`, `pinned`, `expiresAt?` | `userId`, TTL `expiresAt` |

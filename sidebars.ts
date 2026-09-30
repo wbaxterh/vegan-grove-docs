@@ -114,6 +114,7 @@ const sidebars: SidebarsConfig = {
         'ingest/media',
         'ingest/guides',
         'ingest/bot-runbook',
+        'ingest/automations',
       ],
     },
     {

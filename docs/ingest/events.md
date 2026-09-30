@@ -83,6 +83,23 @@ Keywords in the title, checked in this order. First match wins.
 - Attendee data of any kind: counts, names, handles, RSVPs from the source.
 - Sources not on the allowlist, even when they publish an ICS feed.
 
+## Sources beyond ICS and JSON-LD
+
+A round of research on 2026-09-30 across some fifty national, global and Southern California organisations found that most publish nothing machine-readable (their events live on Facebook, Instagram, Meetup or Eventbrite, which are never read), and that the ones that do fall into five shapes. Two are the feeds above. The other three each get a small script: a public JSON API (Mobilize, used by The Humane League), The Events Calendar's REST endpoint (`wp-json/tribe/events/v1/events`, used by Plant Based Treaty), and a site's own static JSON file (Sea Shepherd). The Animal Rights Calendar, the aggregator behind the Cubes of Truth, is plain JSON-LD once the listing's tracking query strings are stripped from its links. The field mappings and the fields each fetcher must never read are documented with the scripts; the schedule is on the [automations page](/ingest/automations).
+
+The allowlist grew three optional fields: `enabled` (a source switched off stays documented), `titleFilter` (a case-insensitive pattern a title must match, for calendars that mix in unrelated events), and `trust` (a note on why the source is or is not on `TRUSTED_SOURCES`).
+
+## Decisions awaiting the owner
+
+These sources are in the allowlist with `enabled: false` and do not run until a person decides.
+
+| Source | Question |
+|---|---|
+| Direct Action Everywhere chapters (Los Angeles, Orange County, San Diego, Inland Empire) | DxE serves its chapters' events from its own API, but the rows are synced from Facebook events. The fetcher drops attendee counts and cover images by construction and never calls the chapter endpoint that exposes internal fields; whether Facebook-derived data is acceptable under this policy is the owner's call. If enabled, these land `pending`. |
+| Vegan Street Fair on Eventeny | The organisation's own site has no event markup; its listing on a ticketing platform carries valid Festival JSON-LD. Whether a third-party platform page counts as the organisation's own site is undecided, and whether the series URL rolls to the next date is unverified. |
+| San Diego VegFest (Nsefu Wildlife Conservation Foundation) | Valid JSON-LD, but the same calendar carries non-vegan events. Enabled only with the `titleFilter` `vegfest|vegan` confirmed, or curated by hand each September. |
+| Mercy For Animals, Farm Sanctuary | Events are sold through Eventbrite. Its official API is allowed by the rules but needs a token and an organisation id; neither is set up. |
+
 ## Adding a source
 
 The bot does not edit the allowlist at runtime. It opens a pull request to `scripts/data/event-sources.json` with the feed URL, the organization's name as written on its own site, and the `--dry-run` count in the PR description. A person merges it. The next daily run picks it up.

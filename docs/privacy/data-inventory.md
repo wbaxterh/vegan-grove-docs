@@ -53,6 +53,8 @@ Not stored, ever: real name, phone number, birthdate, street address, device GPS
 | `posts`, `comments`, `reactions`, `saved_posts` | The feed | per post: friends, grove, or public; comments follow the post | Until deletion |
 | `place_reviews` | Reviews and check-ins | public text; handle only if `showHandle` | Until deletion |
 | `place_lists` | Saved places | self unless `isPublic` | Until deletion |
+| `saved_media` | The watchlist: a saved list of titles, never a history | self | Until deletion |
+| `media_reactions` | "This moved me" and "I took action" on a title; the counts on the title are public, the rows are not | self | Until deletion |
 | `action_log` | Private impact journal | self | Until deletion |
 | `messages` (ciphertext) | Direct messages | participants | 90 days by default |
 | `companion_conversations` | Ivy chats | self | 24 hours unless pinned |

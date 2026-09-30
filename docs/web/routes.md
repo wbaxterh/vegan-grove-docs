@@ -20,7 +20,8 @@ Every path the site answers, in three groups: public pages anyone can load, the 
 | `/events` | upcoming public events by area and date | `GET /api/events` |
 | `/events/[slug]` | one event: when, where as far as the organizer allows, who is hosting, RSVP count | `GET /api/events/:slug` |
 | `/groves` and `/groves/[slug]` | groves by area, and a grove's description with its public events | `GET /api/groves` |
-| `/media` and `/media/[slug]` | the documentary and film library, click-to-load trailers | `GET /api/media` |
+| `/media`, `/media/[slug]`, `/media/collections/[slug]` | the library: hero, shelves, browse grid with search and sort in the URL; item page with providers, trailer, credits, warnings, actions, related; shelf pages | `GET /api/media/home`, `GET /api/media`, `GET /api/media/:slug`, `GET /api/media/:slug/related`, `GET /api/media/collections/:slug` |
+| `/app/watchlist` | the member's saved titles | `GET /api/me/watchlist` |
 | `/guides` and `/guides/[slug]` | outreach, rights, vegan 101, sanctuary, nutrition | `GET /api/guides` |
 | `/login`, `/signup` | forms posting to the session route handler | |
 | `/privacy`, `/terms` | static | |

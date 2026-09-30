@@ -89,7 +89,13 @@ Place and event responses carry `location` as `{ lng, lat }`. GeoJSON (`{ type: 
 | `GET`, `POST /api/conversations` | member | |
 | `GET`, `POST /api/conversations/:id/messages` | member | encrypted at rest, 90 day TTL |
 | Socket.IO `/messages` | member | rooms `user:<id>`, `conversation:<id>` |
-| `GET /api/media?kind=&tag=&cursor=&limit=`, `GET /api/media/:slug` | public | published only, featured first; implemented |
+| `GET /api/media/home` | public | `{ hero, rows }`: featured titles in a deterministic daily order, editor shelves, automatic rows; cached 5 minutes; implemented |
+| `GET /api/media?q=&kind=&tag=&year=&free=&maxRuntime=&sort=&cursor=&limit=` | public | published only; `sort` is `featured` (default), `release`, `title`, `rating` or `runtime`; keyset cursor; implemented |
+| `GET /api/media/collections`, `GET /api/media/collections/:slug` | public | published shelves, four preview items on the list; implemented |
+| `GET /api/media/:slug` | public, session optional | `{ media }`, plus `viewer { saved, reactions }` with a session (then `private, no-store`); implemented |
+| `GET /api/media/:slug/related` | public | up to 12 titles sharing a topic or genre; implemented |
+| `POST` and `DELETE /api/media/:id/save` | member | idempotent watchlist toggle; `GET /api/me/watchlist` lists it; implemented |
+| `POST /api/media/:id/reactions` `{ type }`, `DELETE /api/media/:id/reactions/:type` | member | `moved` or `acted`; answers `{ stats, viewer }`; implemented |
 | `GET /api/guides?category=&cursor=&limit=`, `GET /api/guides/:slug` | public | published only; implemented |
 | `GET`, `POST /api/actions`, `DELETE /api/actions/:id` | member | private log |
 | `POST /api/companion/chat` `{ conversationId?, message }` | member | SSE stream, rate limited |
@@ -114,7 +120,7 @@ Every list takes `cursor` and `limit` (1 to 100, default 50). The rest are per r
 | `/api/events` | `from`, `to`, `area`, `type`, `groveId` | upcoming, published, visible to the caller |
 | `/api/organizations` | `type`, `area`, `q` | verified first |
 | `/api/groves` | none | all |
-| `/api/media` | `kind`, `tag` | published, featured first |
+| `/api/media` | `q`, `kind`, `tag`, `year`, `free`, `maxRuntime`, `sort` | published; five sorts, all keyset |
 | `/api/guides` | `category` | published |
 
 ## Admin
@@ -122,5 +128,7 @@ Every list takes `cursor` and `limit` (1 to 100, default 50). The rest are per r
 | Route | Auth | Note |
 |---|---|---|
 | `GET /api/admin/places/pending`, `PUT /api/admin/places/:id/approve`, `.../reject` | admin | implemented |
-| CRUD `/api/admin/media`, CRUD `/api/admin/guides` | admin | 501 |
+| `GET`, `POST /api/admin/media`, `PATCH`, `DELETE /api/admin/media/:id` | admin | every status; a hand-set field is locked against ingest; implemented |
+| `GET`, `POST /api/admin/media/collections`, `PATCH /api/admin/media/collections/:id` | admin | shelves with an ordered `itemIds`; implemented |
+| CRUD `/api/admin/guides` | admin | 501 |
 | `GET /api/admin/reports`, `PUT /api/admin/reports/:id` | admin | 501 |

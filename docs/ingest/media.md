@@ -68,6 +68,26 @@ Watch providers require the line "Watch providers data by JustWatch" wherever `w
 
 Poster upload needs the media bucket's write role, which the bot never holds. When the enrichment runs where that role is absent it omits `posterKey` and sends the rest; a later run on the API host fills it in.
 
+## The editorial layer in the seed
+
+`scripts/data/media-seed.json` is the curated catalogue and the editorial layer in one file. Beside the ids, each entry may carry:
+
+| Field | Meaning |
+|---|---|
+| `tags` | topic tags from the vocabulary `ethics`, `health`, `environment`, `activism`, `investigation`, plus free tags; the automatic home rows are built from the vocabulary |
+| `kind` | `documentary` (default), `film`, `series`, `talk` or `short` |
+| `contentWarnings` | short phrases such as "graphic footage of animal suffering"; shown on the item page, never hidden behind a click |
+| `officialSite` | the film's own site |
+| `watchLinks` | only official free streams, with `access: free`; TMDB providers are appended after them, never in front |
+| `actions` | one or two `{ label, url, type, org }` links to a well-known organisation: petition, donate, pledge, volunteer, guide, learn |
+| `featured` | read by the shelf seed on the host, never sent to the endpoint |
+
+Every script that reads the file goes through one mapper (`toItem` in the seed script), so the Wikidata pass and the seed pass agree on `sourceId` and a title is never inserted twice.
+
+## The data refresh on the host
+
+`seed:media:collections` runs on the API host (it needs the database), after the three ingest steps, as part of the [data refresh](/ingest/bot-runbook). It upserts the shelves in `scripts/data/media-collections.json` by slug, resolves each shelf's titles to the rows the seed created, sets `featured` on the titles the seed flags, and with `--prune-duplicates` removes a second copy of a curated title left by an earlier mapper mismatch, keeping the row the seed owns. A title the library does not have yet is skipped with a log line and picked up on the next run. Bots never run this step.
+
 ## What is never done
 
 - No film is hosted or proxied. `watchLinks` leave the app.
@@ -77,4 +97,4 @@ Poster upload needs the media bucket's write role, which the bot never holds. Wh
 
 ## Cadence
 
-Monthly for both scripts. The Wikidata query returns a few dozen rows, and the TMDB step makes three calls per item, well inside TMDB's limits at that size. Admins verify watch links quarterly, per the [media feature page](/features/media).
+Weekly, as the media job on the [automations page](/ingest/automations). The Wikidata query returns a few dozen rows, and the TMDB step makes two calls per item, well inside TMDB's limits at that size. Admins verify watch links quarterly, per the [media feature page](/features/media).
