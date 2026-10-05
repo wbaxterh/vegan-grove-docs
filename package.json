@@ -25,15 +25,15 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "2.5.15",
     "@docusaurus/module-type-aliases": "3.10.2",
     "@docusaurus/tsconfig": "3.10.2",
     "@docusaurus/types": "3.10.2",
-    "@secretlint/secretlint-rule-preset-recommend": "^13.0.5",
+    "@secretlint/secretlint-rule-preset-recommend": "^13.0.6",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.0",
     "pokedocs": "^0.2.0",
-    "secretlint": "^13.0.5",
+    "secretlint": "^13.0.6",
     "typescript": "~5.9.2"
   },
   "lint-staged": {
