@@ -31,6 +31,7 @@ This site is public on purpose. The code, the data inventory, the threat model, 
 - **Features:** [overview](/features/overview), then Places, Events, Groves, Friends, Feed, Messages, Media, Guides, Ivy, Notifications.
 - **Data ingest:** the [contract](/ingest) that scripts and the automation bot follow to feed public data, and the [bot runbook](/ingest/bot-runbook).
 - **Engineering and deployment:** [engineering standards](/engineering/overview) and the [deployment overview](/deployment).
+- **Roadmap:** [milestones](/roadmap/milestones), [open questions](/roadmap/open-questions), and the [feature plan](/roadmap/feature-plan).
 
 ## Repositories
 
