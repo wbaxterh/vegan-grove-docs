@@ -146,7 +146,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Roadmap',
-      items: ['roadmap/milestones', 'roadmap/open-questions'],
+      items: ['roadmap/milestones', 'roadmap/open-questions', 'roadmap/feature-plan'],
     },
     {
       type: 'category',
