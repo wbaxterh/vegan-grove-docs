@@ -14,12 +14,12 @@ This page is the operating procedure for the automation (working name grokbot) t
 
 | Run | Scripts, in order | Cadence |
 |---|---|---|
-| Events | `ingest:events:ics`, `ingest:events:jsonld` | daily, early morning Pacific |
-| Organizations | `ingest:organizations` | monthly, day 1 |
-| Media | `ingest:media:wikidata`, `ingest:media:tmdb` | monthly, day 2 |
-| Places | `ingest:places:osm`, `ingest:places:gardens` | quarterly, first week of January, April, July, October |
-| Sanctuaries | `ingest:sanctuaries` | when `sanctuaries.json` changes |
-| Guides | `ingest:guides` | on request, at most five drafts per run |
+| Events | `ingest:events:ics`, `ingest:events:jsonld`, `ingest:events:mobilize`, `ingest:events:tribe`, `ingest:events:json`, `ingest:events:dxe` | daily, early morning Pacific |
+| Organizations and guides | `ingest:organizations`, `ingest:guides` | monthly, day 1 |
+| Media | `ingest:media:seed`, `ingest:media:wikidata`, `ingest:media:tmdb` | weekly, Sunday |
+| Places | `ingest:places:osm` (dry run, then real), `ingest:places:gardens`, `ingest:places:curated` | quarterly, the 2nd of January, April, July, October |
+
+The exact cron lines and commands live on the [automations page](/ingest/automations) and in [`/automations.json`](/automations.json).
 
 Runs never overlap. One resource at a time, in the order listed within a day.
 
@@ -30,7 +30,8 @@ Runs never overlap. One resource at a time, in the order listed within a day.
 | `INGEST_KEY` | yes | sent as `X-Ingest-Key`. The only credential the bot holds. |
 | `API_URL` | yes | the API origin the scripts POST to |
 | `TMDB_API_KEY` | for `ingest:media:tmdb` only | TMDB read access |
-| `INGEST_USER_AGENT` | recommended | the descriptive `User-Agent` for every outbound fetch |
+
+The descriptive `User-Agent` for every outbound fetch is built into the scripts; nothing to configure.
 
 The bot has no session token, no admin role, no database connection string, no bucket role, and no access to any member table. If any of those is offered to it, the offer is a misconfiguration and the bot stops.
 

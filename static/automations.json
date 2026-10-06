@@ -1,0 +1,99 @@
+{
+  "$schema": "https://docs.vegangrove.org/automations.schema.json",
+  "version": 1,
+  "updated": "2026-10-06",
+  "docs": "https://docs.vegangrove.org/ingest/automations",
+  "runbook": "https://docs.vegangrove.org/ingest/bot-runbook",
+  "repository": "https://github.com/wbaxterh/vegan-grove-api",
+  "branch": "main",
+  "node": "24",
+  "install": ["npm ci --no-audit --no-fund"],
+  "timezone": "America/Los_Angeles",
+  "environment": {
+    "API_URL": { "required": true, "value": "https://api.vegangrove.org", "secret": false },
+    "INGEST_KEY": {
+      "required": true,
+      "secret": true,
+      "from": "the maintainer; sent as the X-Ingest-Key header; never logged"
+    },
+    "TMDB_API_KEY": { "required": false, "secret": true, "jobs": ["media-refresh"] }
+  },
+  "healthcheck": { "url": "https://api.vegangrove.org/healthz", "expect": { "ok": true } },
+  "conventions": {
+    "dryRunFlag": "--dry-run",
+    "newSourceRule": "run a new or changed source with --dry-run once and compare counts before a real run",
+    "summaryLine": "each command prints one JSON line with inserted, updated, unchanged and rejected; a non-zero exit is a failed step",
+    "rateLimit": "at most 60 ingest calls per 15 minutes; batches of at most 200 items; wait Retry-After on 429",
+    "noOverlap": "never run two jobs at once"
+  },
+  "jobs": [
+    {
+      "name": "events-refresh",
+      "owner": "grokbot",
+      "schedule": "15 4 * * *",
+      "commands": [
+        "npm run --silent ingest:events:ics",
+        "npm run --silent ingest:events:jsonld",
+        "npm run --silent ingest:events:mobilize",
+        "npm run --silent ingest:events:tribe",
+        "npm run --silent ingest:events:json",
+        "npm run --silent ingest:events:dxe"
+      ],
+      "success": "every step exits 0 with rejected equal to 0; upcoming events on GET /api/stats never drop to 0 while a source has events",
+      "stop": [
+        "any 401 from the API (do not retry)",
+        "rejected above 10 percent of items in a run",
+        "a source whose robots.txt now disallows its path",
+        "an item count that moved more than 25 percent since the last run"
+      ]
+    },
+    {
+      "name": "media-refresh",
+      "owner": "openclaw",
+      "schedule": "30 3 * * 0",
+      "commands": [
+        "npm run --silent ingest:media:seed",
+        "npm run --silent ingest:media:wikidata",
+        "npm run --silent ingest:media:tmdb"
+      ],
+      "requires": ["TMDB_API_KEY"],
+      "success": "the seed answers 200 with every item unchanged or updated; the TMDB step reports posters equal to the number of items with a TMDB id when the bucket role is present, otherwise 0 and a warning",
+      "stop": ["TMDB answering 401", "the Wikidata step returning zero results two weeks running"],
+      "notes": "run the three in this order and never the seed alone: the seed re-sends the editorial layer and the TMDB step restores providers after it"
+    },
+    {
+      "name": "organizations-and-guides",
+      "owner": "grokbot",
+      "schedule": "0 5 1 * *",
+      "commands": ["npm run --silent ingest:organizations", "npm run --silent ingest:guides"],
+      "success": "every step exits 0 with rejected equal to 0; guides land as drafts for an admin to publish"
+    },
+    {
+      "name": "places-refresh",
+      "owner": "grokbot",
+      "schedule": "0 6 2 1,4,7,10 *",
+      "commands": [
+        "npm run --silent ingest:places:osm -- --dry-run",
+        "npm run --silent ingest:places:osm",
+        "npm run --silent ingest:places:gardens",
+        "npm run --silent ingest:places:curated"
+      ],
+      "success": "the dry run count is within 25 percent of the last real run before the real run starts; every step exits 0",
+      "stop": [
+        "the OSM importer reporting that Overpass is not answering (try again the next day)",
+        "a dry-run count that moved more than 25 percent"
+      ],
+      "notes": "slow by design: Overpass is queried one tile at a time at one request per second; allow up to two hours"
+    }
+  ],
+  "never": [
+    "hold or request a session token, an admin role, a database connection string or a bucket credential",
+    "fetch Facebook, Instagram, Meetup or Eventbrite pages",
+    "send attendee, RSVP, organizer-person or any personal field",
+    "send an image URL as posterKey or hot-link an image",
+    "add a source at runtime; new sources arrive as a pull request to the allowlist",
+    "retry a 401",
+    "log the key, a request body or a full item",
+    "publish, approve or verify anything"
+  ]
+}
