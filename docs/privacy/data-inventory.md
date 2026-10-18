@@ -71,7 +71,7 @@ Not stored, ever: real name, phone number, birthdate, street address, device GPS
 
 ## Ingested public data
 
-`places`, `events`, `organizations`, `media_items`, and `guides` rows written by the [ingest endpoint](/ingest) carry no member data. Their provenance fields describe a source, not a person:
+`places`, `events`, `organizations`, `media_items`, `guides`, and (proposed) `creators` rows written by the [ingest endpoint](/ingest) carry no member data. Their provenance fields describe a source, not a person:
 
 | Field | What it holds | Retention |
 |---|---|---|
@@ -79,7 +79,7 @@ Not stored, ever: real name, phone number, birthdate, street address, device GPS
 | `lastSeenAt` | The last ingest run that carried the row | With the row |
 | `adminEdited` | Field paths an admin changed, so a re-ingest does not overwrite them | With the row |
 
-Organizer names, attendee lists, and personal social accounts are dropped at the source and never stored. The automation that runs ingest holds one credential, the ingest key, which can write only through `/api/ingest/*` and cannot read any collection. OpenStreetMap, Nominatim, Wikidata, and TMDB receive only the script's own requests, never anything about a member.
+Organizer names, attendee lists, and personal social accounts are dropped at the source and never stored. The one exception is [Creators](/features/creators): public figures who publish vegan content in public, listed by name with their own public site and channel handles so a member can follow a link out. No follower or view counts, no photos, and nothing read from a social platform are stored, and any creator can have their entry retired on request. The automation that runs ingest holds one credential, the ingest key, which can write only through `/api/ingest/*` and cannot read any collection. OpenStreetMap, Nominatim, Wikidata, and TMDB receive only the script's own requests, never anything about a member.
 
 ## What third parties receive
 

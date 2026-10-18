@@ -29,7 +29,7 @@ Conversations are stored so the member can continue them. Unpinned conversations
 ## What ships in v1
 
 - Text chat on web (`/app/companion`) and mobile (a modal from Home), streamed token by token over SSE.
-- Read-only tools: search places, list events, find guides, find media.
+- Read-only tools: search places, list events, find guides, find media, and find creators once [Creators](/features/creators) ships. A meaning-based `search_knowledge` tool is proposed in [ADR-0014](/architecture/adrs/adr-0014-knowledge-base).
 - Pin, unpin, delete conversations.
 - A visible line on first use: "Ivy knows your handle and interests, nothing else. Unpinned chats vanish in 24 hours."
 

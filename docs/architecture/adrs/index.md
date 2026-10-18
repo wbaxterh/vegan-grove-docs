@@ -26,6 +26,7 @@ An ADR records one decision, the context that forced it, the alternatives that l
 | [0011](/architecture/adrs/adr-0011-messages-encryption) | Messages encrypted at rest with retention, end-to-end later | Proposed |
 | [0012](/architecture/adrs/adr-0012-companion) | Ivy runs on the Anthropic API with ephemeral conversations | Proposed |
 | [0013](/architecture/adrs/adr-0013-media-pipeline) | Images through S3 presigned uploads, video through Bunny Stream | Proposed |
+| [0014](/architecture/adrs/adr-0014-knowledge-base) | Semantic search over public content with Atlas Vector Search on the existing cluster, Qdrant only when named limits bind | Proposed |
 
 ## Format
 

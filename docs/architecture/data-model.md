@@ -91,6 +91,7 @@ flowchart TB
 | `media_collections` | `slug`, `name`, `description`, `order`, `published`, `itemIds[]` (ordered) | unique `slug`, `published + order` |
 | `saved_media` | `mediaId`, `userId` | unique `mediaId + userId`, `userId + _id` |
 | `media_reactions` | `mediaId`, `userId`, `type` (`moved`, `acted`) | unique `mediaId + userId + type` |
+| `creators` (proposed) | `name`, `slug`, `alsoKnownAs[]`, `kind`, `members[]`, `bio`, `topics[]`, `country`, `languages[]`, `website?`, `podcast?`, `socials { youtube, instagram, tiktok, x, bluesky, mastodon }`, `externalIds { wikidata }`, `veganSource { url, label }`, `relatedGuideIds[]`, `relatedMediaIds[]`, `status`, `reviewedAt?`, plus provenance; no count fields ([Creators](/features/creators)) | unique `slug`, `status + name`, `status + topics`, `status + languages`, unique sparse `externalIds.wikidata`, unique `source + sourceId` |
 | `guides` | `title`, `slug`, `category`, `summary`, `body`, `sources[] { title, url, license }`, `status`, plus provenance | unique `slug`, `category`, unique `source + sourceId` |
 | `action_log` | `userId`, `type`, `eventId?`, `hours?`, `note?`, `occurredAt` | `userId + occurredAt` |
 | `companion_conversations` | `userId`, `messages[]`, `pinned`, `expiresAt?` | `userId`, TTL `expiresAt` |

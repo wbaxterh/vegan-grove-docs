@@ -19,6 +19,7 @@ Every feature below maps to a Trick Book concept in the [concept map](/product/c
 | [Feed](/features/feed) | Share | Photos and video to friends, a Grove, or (opt-in) the public | Friends by default | M3 |
 | [Messages](/features/messages) | Share | 1:1 and group chat | Participants only, encrypted at rest | M3 |
 | [Media](/features/media) | Learn | Vegan documentaries, films, talks, where to watch | Public | M2 |
+| [Creators](/features/creators) | Learn | A curated directory of vegan creators with links out to their own channels; not ranked | Public | M2 |
 | [Guides](/features/guides) | Learn | Outreach, rights, vegan 101, sanctuary volunteering | Public | M1 |
 | [Ivy](/features/companion) | Learn, Plan | The companion | Self, ephemeral | M4 |
 | [Notifications](/features/notifications) | Act | Event reminders, friend requests, messages | Self | M2 |
@@ -34,6 +35,6 @@ Each feature page has the same sections: Why, What ships in v1, Data and visibil
 
 - Public profiles or a member directory ([ADR-0004](/architecture/adrs/adr-0004-profiles-never-public)).
 - "People nearby" or any location-based social feature.
-- Follower counts, leaderboards, or streaks.
+- Follower counts, leaderboards, or streaks, including for the public figures in [Creators](/features/creators).
 - Payments, subscriptions, or sponsored placement.
 - Business-to-member messaging.
