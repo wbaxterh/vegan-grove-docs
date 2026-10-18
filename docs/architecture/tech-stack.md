@@ -41,6 +41,7 @@ Status: **Scaffolded 2026-09-24**
 | Push | Expo push service | |
 | Map tiles | OpenFreeMap public instance | No key, no cookies, no personal data ([ADR-0006](/architecture/adrs/adr-0006-maps)) |
 | Companion | Anthropic API | Streaming, model from config ([ADR-0012](/architecture/adrs/adr-0012-companion)) |
+| Semantic search (proposed) | Atlas Vector Search on the same cluster | Public published rows only, added when tool calls are not enough ([ADR-0014](/architecture/adrs/adr-0014-knowledge-base)) |
 | SSO | Sign in with Apple, Google Identity | Email from the verified token only |
 | DNS and certs | Route 53, ACM (Amplify), certbot (API) | |
 | Mobile builds | EAS Build free tier | 30 builds a month |
