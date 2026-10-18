@@ -154,7 +154,7 @@ Web: `/creators` and `/creators/[slug]`, server-rendered for SEO, listed in the 
 
 ## Ivy
 
-Ivy gets one more read-only tool, `find_creators({ topic?, language?, query? })`, which calls the same service as `GET /api/creators` and returns published entries only: name, bio, topics, languages, and the links. Ivy may recommend a creator and must say the list is curated, not ranked. Nothing about the member is passed to the tool beyond the query, and nothing is logged about which creators a member asked about. See [Ivy](/features/companion) and the [knowledge base ADR](/architecture/adrs/adr-0014-knowledge-base) for how creator bios may later be searchable by meaning.
+Ivy gets one more read-only tool, `find_creators({ topic?, language?, query? })`, which calls the same service as `GET /api/creators` and returns published entries only: name, bio, topics, languages, and the links. Ivy may recommend a creator and must say the list is curated, not ranked. Nothing about the member is passed to the tool beyond the query, and nothing is logged about which creators a member asked about. See [Ivy](/features/companion) and the [knowledge base ADR](/architecture/adrs/adr-0014-knowledge-base) for how creator bios may later be searchable by meaning. If that ships, the published bio and topics are sent to OpenRouter for embedding, as that ADR describes.
 
 ## Takedown and opt-out
 
@@ -176,7 +176,7 @@ The routes and screens sit behind one flag. Turning it off hides the directory a
 
 ## Open questions
 
-- **The name.** "Creators" is neutral and avoids the word "influencer", which reads as clout. Wes may prefer "Voices" or "People to learn from".
+- **The name: decided 2026-10-18.** The section is "Creators" (Wes). It avoids the word "influencer", which reads as clout.
 - **Who reviews inclusion.** Proposal: Wes publishes the first thirty; after that any admin, with a second admin for anyone flagged as contentious.
 - **Portraits.** Initials only, or ask each creator for a rights-cleared portrait to host ourselves?
 - **SoCal first or global?** The first list is international and English-first. Should local creators (organizers, chefs, sanctuary voices in Southern California) get their own shelf or wait for Groves?

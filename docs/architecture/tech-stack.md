@@ -42,6 +42,7 @@ Status: **Scaffolded 2026-09-24**
 | Map tiles | OpenFreeMap public instance | No key, no cookies, no personal data ([ADR-0006](/architecture/adrs/adr-0006-maps)) |
 | Companion | Anthropic API | Streaming, model from config ([ADR-0012](/architecture/adrs/adr-0012-companion)) |
 | Semantic search (proposed) | Atlas Vector Search on the same cluster | Public published rows only, added when tool calls are not enough ([ADR-0014](/architecture/adrs/adr-0014-knowledge-base)) |
+| Embeddings (proposed) | OpenRouter, `openai/text-embedding-3-small` at 1,024 dimensions | Zero-retention routing pinned to Azure, fallbacks off ([ADR-0014](/architecture/adrs/adr-0014-knowledge-base)) |
 | SSO | Sign in with Apple, Google Identity | Email from the verified token only |
 | DNS and certs | Route 53, ACM (Amplify), certbot (API) | |
 | Mobile builds | EAS Build free tier | 30 builds a month |
@@ -67,4 +68,4 @@ Fonts are the system UI stack for body and the system monospace stack for labels
 
 ## Deliberately absent
 
-Google Maps SDK, PostHog, Google Analytics, Sentry with PII, Stripe, any LLM router that spreads prompts across providers, Docker Desktop on the dev box, and a monorepo tool. Each absence is a decision, most of them recorded in the [ADRs](/architecture/adrs).
+Google Maps SDK, PostHog, Google Analytics, Sentry with PII, Stripe, any LLM router that spreads prompts across providers (OpenRouter is used for embeddings only, pinned to one zero-retention endpoint with fallbacks off, per [ADR-0014](/architecture/adrs/adr-0014-knowledge-base)), Docker Desktop on the dev box, and a monorepo tool. Each absence is a decision, most of them recorded in the [ADRs](/architecture/adrs).

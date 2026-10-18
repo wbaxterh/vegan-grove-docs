@@ -90,5 +90,6 @@ Organizer names, attendee lists, and personal social accounts are dropped at the
 | Bunny Stream | Video files you upload, already stripped of metadata | Transcoding and playback |
 | OpenFreeMap | Map tile requests from your device (no key, no cookies) | Map rendering |
 | Anthropic | Your handle, your chosen interests, and the text of your Ivy conversation | Running the companion |
+| OpenRouter, and Microsoft Azure as the upstream provider it routes to | When knowledge search ships: the text of a search Ivy runs for you (not your handle, interests, or conversation), and the public text of Guides, media, creators, places, and public events. Routed only to a zero-retention endpoint, fallbacks off ([ADR-0014](/architecture/adrs/adr-0014-knowledge-base)). | Turning text into embeddings for search by meaning |
 
 No party receives your email for advertising, your location, your friends, or your RSVPs.

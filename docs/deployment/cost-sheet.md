@@ -30,10 +30,11 @@ Annual, outside the table: the domain (about $12 a year). The Apple Developer me
 
 ## Not in the table
 
-Two usage-based services start near zero and are the first lines to watch:
+Three usage-based services start near zero and are the first lines to watch:
 
 - **Bunny Stream** (video): storage and delivery per gigabyte, with a small monthly minimum once there is any usage. Grows with video posts. Zero until the first upload.
 - **Anthropic API** (the companion, [Ivy](/features/companion)): per token, model set by `COMPANION_MODEL`. Rate-limited per session at the API so a single member cannot run the bill. Zero until the companion is switched on.
+- **OpenRouter** (embeddings for [knowledge search](/architecture/adrs/adr-0014-knowledge-base)): `openai/text-embedding-3-small` at $0.02 per million input tokens as listed on 2026-10-18. Embedding the whole public corpus costs under a cent; queries are a few tokens each. Zero until the search tool is switched on.
 
 ## Free tiers relied on
 

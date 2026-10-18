@@ -76,6 +76,7 @@ Namespace `/feed` is reserved for realtime comments and is not wired in v1.
 | Bunny Stream | API (create, status), clients (TUS upload, HLS playback) | Video |
 | SES | API | Magic links, account mail |
 | Anthropic API | API | Ivy |
+| OpenRouter (zero-retention routing to Azure) | API | Embeddings for knowledge search, proposed ([ADR-0014](/architecture/adrs/adr-0014-knowledge-base)) |
 | OpenFreeMap | Clients | Map tiles, no key |
 | Apple, Google | Clients (SDKs), API (token verification) | SSO |
 | Expo push | API | Notifications |

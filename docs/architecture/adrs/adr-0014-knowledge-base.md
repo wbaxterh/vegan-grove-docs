@@ -1,6 +1,6 @@
 ---
 title: "ADR-0014: Knowledge base"
-description: Semantic search over public content, when it is needed, uses Atlas Vector Search on the existing cluster with one chunk collection, embeds published public rows only, and moves to Qdrant only when named limits bind.
+description: Semantic search over public content, when it is needed, uses Atlas Vector Search on the existing cluster with one chunk collection, embeds published public rows only through OpenRouter pinned to a zero-retention endpoint, and moves to Qdrant only when named limits bind.
 ---
 
 # ADR-0014: Search public content by meaning with Atlas Vector Search on the existing cluster
@@ -44,14 +44,18 @@ The same page now says Free clusters can enable a daily snapshot that keeps four
 - **Results are ids, not answers.** `$vectorSearch` returns `sourceCollection` and `sourceId`; the service then loads each row through the normal service for that collection, which applies the visibility filter again. A stale chunk can never surface a row the public API would not return.
 - **Storage is budgeted.** Vectors are stored as `BinData` float32, about 4 bytes per dimension instead of the 8 or more of an array of doubles. At about 3,000 chunks of 1,024 dimensions that is roughly 12 MB of vectors plus the index, a few percent of the 512 MB. The chunk writer refuses to run when the cluster's logical size passes 60 percent of the limit and logs why.
 - **The writer runs on the API host**, after ingest and after an admin publishes, and re-embeds a row only when its `contentHash` changes. Bots never embed and never hold the embedding credential.
-- **The embedding model is configuration** (`EMBEDDING_MODEL`, with the dimension recorded on every chunk), and changing it means re-embedding everything, which at this size is minutes.
+- **Embeddings come from OpenRouter** (decided by Wes on 2026-10-18). The model is `openai/text-embedding-3-small`, requested at **1,024 dimensions** through the `dimensions` parameter (its native size is 1,536), listed at $0.02 per million input tokens on 2026-10-18. Indexing the whole corpus once costs well under a cent. The API calls `POST https://openrouter.ai/api/v1/embeddings` with `OPENROUTER_API_KEY`. The model and dimension are configuration (`EMBEDDING_MODEL`, `EMBEDDING_DIMENSIONS`) and are recorded on every chunk; changing either means re-embedding everything, which at this size takes minutes.
+- **What OpenRouter receives.** At index time: the public text in the table above. At query time: the search string Ivy's `search_knowledge` tool sends, which is written from what the member asked. Not the conversation, the handle, or the interests. OpenRouter forwards both to whichever upstream provider serves the model; with the routing below that is Microsoft Azure. Query strings are never logged by the API.
+- **Routing is pinned to zero data retention.** Every request sends `provider: { "zdr": true, "data_collection": "deny", "only": ["azure"], "allow_fallbacks": false }`, and the OpenRouter account also has ZDR enforcement on for the OpenAI model group in its privacy settings. OpenRouter documents that `zdr: true` routes only to endpoints with a zero data retention policy, that `data_collection: "deny"` excludes providers that store or train on data, and that OpenRouter itself does not retain prompts unless prompt logging is opted in ([provider routing](https://openrouter.ai/docs/guides/routing/provider-selection), [zero data retention](https://openrouter.ai/docs/guides/features/zdr), checked 2026-10-18). On that date the only ZDR endpoint for this model was Azure, which is why `only` names it. Fallbacks are off, so if no zero-retention endpoint is available the request fails and Ivy falls back to the field tools instead of sending text somewhere else. Leave prompt logging off on the account.
+- **This is not a reversal of [ADR-0012](/architecture/adrs/adr-0012-companion).** That ADR rejected OpenRouter for the companion because conversation text would fan out to many providers with different retention policies. Pinning one zero-retention endpoint with fallbacks off removes the fan-out for embeddings. Ivy's conversations still go to Anthropic directly.
 
 ```mermaid
 flowchart LR
   Publish["Admin publish or ingest upsert"] -->|"published public row"| Writer["Chunk writer on the API host"]
-  Writer -->|"public text only"| Embed["Embedding model"]
+  Writer -->|"public text only"| Embed["OpenRouter embeddings (ZDR, Azure only)"]
   Writer -->|"BinData vector plus sourceCollection and sourceId"| Chunks["kb_chunks, one vector index"]
-  Ivy["Ivy search_knowledge tool"] -->|"$vectorSearch with filter"| Chunks
+  Ivy["Ivy search_knowledge tool"] -->|"query string only"| Embed
+  Ivy -->|"$vectorSearch with filter"| Chunks
   Chunks -->|"ids only"| Services["Collection services, visibility filter"]
   Services -->|"published rows"| Ivy
 ```
@@ -69,7 +73,7 @@ Move in this order, and only when one of these is true and measured: first to an
 
 ## Open questions
 
-- **The embedding provider.** Embedding the corpus sends only public text, but embedding Ivy's search query sends member-written text to whoever runs the model. Options: a hosted embedding API (a new third party that needs a row in the [data inventory](/privacy/data-inventory) and an entry in "What third parties receive"), or a small open model run by the chunk writer and the API for queries (no new third party, but memory on a small host). Owner: Wes, before anything is embedded.
+- **The embedding provider: resolved 2026-10-18.** OpenRouter, with the model, dimensions, and routing above. It is listed in the [data inventory](/privacy/data-inventory) under what third parties receive.
 - **Site search.** Should the web search box use the same index (hybrid full-text and vector), or stay on indexed text search? Either way it shares the three-index budget.
 - **Languages.** Guides are English; some creators publish in Italian or German. A multilingual model, or English only in v1?
 
@@ -85,4 +89,5 @@ Move in this order, and only when one of these is true and measured: first to an
 
 - The three-index ceiling on Free clusters is shared with any future full-text search index. Mitigation: one `kb_chunks` index with filter fields.
 - Vectors take space in a 512 MB cluster that also holds every member record. Mitigation: `BinData` vectors, the 60 percent guard, and the upgrade path above.
-- Query embedding may add a third party that sees member text. Mitigation: the open question above must be closed, and the inventory updated, before the tool ships.
+- Query embedding adds OpenRouter, and through it Azure, as parties that see the text of a member's search. Mitigation: only the tool's query string is sent, routing is pinned to a zero-retention endpoint with fallbacks off, the API never logs the query, and the inventory row exists before the tool ships.
+- Routing depends on OpenRouter's published data policies, which can change. Mitigation: the ZDR endpoint list is published at `https://openrouter.ai/api/v1/endpoints/zdr`; recheck it whenever the model or routing changes, and at least quarterly.
