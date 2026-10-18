@@ -51,6 +51,9 @@ Shapes only. Values are never written anywhere public.
 | `ANTHROPIC_API_KEY` | companion | optional; the route answers `503` without it |
 | `COMPANION_MODEL` | model id | string, default `claude-opus-5`; configuration, never a literal in code |
 | `COMPANION_MAX_TOKENS` | completion cap | integer |
+| `OPENROUTER_API_KEY` | embeddings for knowledge search ([ADR-0014](/architecture/adrs/adr-0014-knowledge-base)) | optional; secret parameter in production; search falls back to the field tools without it |
+| `EMBEDDING_MODEL` | embedding model id on OpenRouter | string, default `openai/text-embedding-3-small`; configuration, never a literal in code |
+| `EMBEDDING_DIMENSIONS` | vector size requested and stored | integer, default `1024` |
 | `COMPANION_HISTORY_LIMIT` | messages kept per conversation | integer, default `20` |
 | `DM_ENCRYPTION_KEY` | AES-256-GCM key for messages at rest | 32 bytes, base64; required in production |
 | `DM_KEY_ID` | stored with each message for rotation | string, default `v1` |
