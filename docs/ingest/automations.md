@@ -1,14 +1,14 @@
 ---
 title: Automations
-description: The two scheduled jobs that keep the library and the events list fresh, written as cron entries with the exact commands, environment, success signals and stop conditions, for the media bot (OpenClaw) and the events bot (grokbot).
+description: The scheduled ingest jobs, with cron lines, commands, environment, success signals, and stop conditions, for the media bot and the events bot.
 sidebar_position: 8
 ---
 
 # Automations
 
-Status: **Updated 2026-10-06**
+Status: **Updated 2026-10-24**
 
-Four jobs, one contract. The media job belongs to the personal assistant (OpenClaw); the events job belongs to the ingest bot (grokbot). Both run the scripts in the API repository against the same ingest endpoint, both hold only `INGEST_KEY`, and neither publishes anything: rows land `draft` or `pending` unless the source is on the trusted list, and a person moves them. The [runbook](/ingest/bot-runbook) is the operating procedure; this page is the schedule and the exact invocation.
+Five jobs, one contract. The media jobs belong to the personal assistant (OpenClaw); the events, organizations, and places jobs belong to the ingest bot (grokbot). Each job runs the scripts in the API repository against the same ingest endpoint, holds only `INGEST_KEY`, and does not publish on its own: rows land `draft` or `pending` unless the source is on the trusted list, and a person moves them. The [runbook](/ingest/bot-runbook) is the operating procedure; this page is the schedule and the exact invocation.
 
 ## The manifest
 
@@ -99,15 +99,46 @@ Environment: `API_URL` and `INGEST_KEY`. Success: both steps exit 0 with `reject
 
 ## Job 4: places refresh (grokbot)
 
-Purpose: re-read OpenStreetMap for every vegan place, community garden and curated sanctuary so hours, phone numbers and new openings stay current. Quarterly, because the data moves slowly and the Overpass service is shared with everyone.
+Purpose: re-read OpenStreetMap for every vegan place, farmers market, community garden and curated sanctuary so hours, phone numbers and new openings stay current. Nightly, at 12:42 AM Pacific.
 
 ```cron
-# places, quarterly, the 2nd of January, April, July and October at 06:00 Pacific
-0 6 2 1,4,7,10 *  cd $VG_API && npm run --silent ingest:places:osm -- --dry-run && npm run --silent ingest:places:osm && npm run --silent ingest:places:gardens && npm run --silent ingest:places:curated
+# places, nightly, 12:42 AM Pacific
+42 0 * * *  cd $VG_API && npm run --silent ingest:places:osm -- --dry-run && npm run --silent ingest:places:osm && npm run --silent ingest:places:gardens && npm run --silent ingest:places:curated
 ```
 
-Environment: `API_URL` and `INGEST_KEY`. The scripts talk to the ingest endpoint like every other job; OSM is on the trusted list, so refreshed rows publish, and the curated file is the source for sanctuaries and gardens. The dry run comes first on purpose: its count must sit within 25 percent of the last real run, or the job stops and reports. Allow up to two hours; Overpass is queried one tile at a time at one request per second, and the importer gives up on its own when the service is not answering, which is a "try tomorrow", not an alert.
+Farmers and produce markets run inside this step. `ingest:places:osm` pulls them in the same tiled Overpass run as the `diet:vegan` places: named `amenity=marketplace` features that are farmers or produce markets. They land as `grocery` with the tag `market:farmers`, vegan level `options` unless `diet:vegan=only`, and with `chain` false. Flea, craft, and antique markets are left out. The same ODbL attribution, the same mirror fallback, and the same stop after consecutive failed tiles apply. The mapping is on the [places ingest page](/ingest/places) and the [data sources page](/features/places/data-sources).
+
+Environment: `API_URL` and `INGEST_KEY`. The scripts talk to the ingest endpoint like every other job; OSM is on the trusted list, so refreshed rows publish, and the curated file is the source for sanctuaries and gardens. The dry run comes first on purpose: its count must sit within 25 percent of the last real run, or the job stops and reports. Allow up to two hours; Overpass is queried one tile at a time at one request per second.
+
+The nightly cadence relies on an Overpass outage guard. A tile that fails on both mirrors is skipped, and those rows keep the last successful values. Six tiles in a row failing on both mirrors aborts the importer with "Overpass is not answering". That abort is a retry the next night, not an alert. The same guard covers the farmers markets, because they ride this Overpass run.
+
+## Job 5: Open Library books (OpenClaw)
+
+Purpose: add books on veganism and animal rights to the media library. Monthly, because the catalogue moves slowly and Open Library asks for one request per second. `openlibrary` is not a trusted source, so every book lands `draft` until an admin publishes it.
+
+```cron
+# open library books, monthly, the 3rd at 06:30 Pacific
+30 6 3 * *  cd $VG_API && npm run --silent ingest:media:openlibrary
+```
+
+| Step | Command | What it does | Trusted? |
+|---|---|---|---|
+| 1 | `npm run --silent ingest:media:openlibrary` | searches Open Library for `subject:veganism` and `subject:"animal rights"`, upserts `book` rows (title, authors, year, one ISBN, link to the work) | no, source `openlibrary` lands `draft` |
+
+The same command supports `--dry-run` (`npm run --silent ingest:media:openlibrary -- --dry-run`). A dry run searches, maps, and prints counts. It does not POST. Run it once before the first real run, and again whenever the script changes. The host data refresh (`deploy/refresh-data.sh`) runs this step after the TMDB step.
+
+The script waits one second between Open Library calls, including cover downloads, and skips a cover that is already in the media bucket. The first run downloads covers when the bucket role is present; later runs mostly search. As of this change the subject counts were about 1,600 veganism works and about 1,400 animal-rights works, with overlap. A work found under both subjects is one row with both topic tags.
+
+Covers are downloaded, EXIF, XMP, and IPTC stripped, and stored in the media bucket. The API receives the object key only. When the bucket role is absent, covers are skipped and the catalogue rows still post. Nothing is hotlinked.
+
+Environment: `API_URL` and `INGEST_KEY`. The bucket role is optional and is what lets covers upload; the bot does not hold it, matching the TMDB poster rule on [job 1](#job-1-media-refresh-openclaw).
+
+Success signals: the step exits 0 with `rejected` at zero. The summary's book count should sit near the last run. New rows stay `draft`.
+
+Stop conditions, beyond the runbook's: Open Library search failing after retries, a subject returning zero works (the query or the API changed), or a subject truncated at the page cap (the cap is the runaway stop; today's counts sit under it).
+
+What the job must never do: hotlink a cover or send a remote image URL as `posterKey`, add `openlibrary` to the trusted list from the bot, send a member field, or read Facebook or Instagram.
 
 ## Adding a job
 
-A third job (guides, organisations, places) follows the same shape: one `cron` line, the commands in order, the environment table, success signals, stop conditions, and the never list. The [runbook](/ingest/bot-runbook) already gives the cadence for those resources.
+A new job follows the same shape: one `cron` line, the commands in order, the environment table, success signals, stop conditions, and the never list. The [runbook](/ingest/bot-runbook) already gives the cadence for each resource.

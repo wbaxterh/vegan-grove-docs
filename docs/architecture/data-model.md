@@ -6,7 +6,7 @@ sidebar_position: 4
 
 # Data model
 
-Status: **Scaffolded 2026-09-24**, ingest fields added 2026-09-29 per the [ingest contract](/ingest)
+Status: **Scaffolded 2026-09-24**, ingest fields added 2026-09-29 per the [ingest contract](/ingest); `place_checkins` and book fields added 2026-10-24
 
 Every collection is a Mongoose schema in `vegan-grove-api/src/models`, with `timestamps: true`, every reference an `ObjectId`, and every index declared in the schema. That last sentence is the whole lesson from The Trick Book, where 38 collections were shaped by whichever `insertOne` ran first and `userId` was an ObjectId, a string, or a DBRef depending on the file.
 
@@ -30,6 +30,8 @@ flowchart TB
   Posts --> Comments["comments"]
   Posts --> Reactions["reactions"]
   Places --> Reviews["place_reviews"]
+  Places --> CheckIns["place_checkins"]
+  User -->|confirms| CheckIns
   User -->|keeps| Lists["place_lists"]
   Conversations["conversations"] --> Messages["messages"]
   User -->|records| Actions["action_log"]
@@ -60,9 +62,10 @@ flowchart TB
 
 | Collection | Key fields | Indexes |
 |---|---|---|
-| `places` | `name`, `slug`, `type` (now including `garden`), `veganLevel`, `location` (GeoJSON Point), `address`, `city`, `postcode`, `area` (derived from coordinates), `website`, `phone`, `hours`, `tags[]`, `description`, `chain`, `photoKeys[]`, `approvalStatus`, `submittedBy?`, `ratingAvg`, `reviewCount`, plus [provenance](#provenance-on-ingested-collections) | unique `slug`, 2dsphere `location`, `approvalStatus + type`, `approvalStatus + veganLevel + chain`, unique `source + sourceId`, sparse unique `osmId` (legacy, equal to `sourceId` on OSM rows) |
-| `place_reviews` | `placeId`, `userId`, `rating`, `content`, `visitedMonth`, `showHandle`, `status` | `placeId + createdAt`, `userId` |
-| `place_lists` | `userId`, `name`, `placeIds[]`, `isPublic` | `userId` |
+| `places` | `name`, `slug`, `type` (including `garden`; a farmers market is `grocery` plus the tag `market:farmers`), `veganLevel`, `location` (GeoJSON Point), `address`, `city`, `postcode`, `area` (derived from coordinates), `website`, `phone`, `hours`, `tags[]`, `description`, `chain`, `photoKeys[]`, `approvalStatus`, `submittedBy?`, `ratingAvg`, `reviewCount`, `checkInCount`, `latestCheckInMonth`, `lastAgreeingCheckInAt` (not serialized; it drives `verification`), plus [provenance](#provenance-on-ingested-collections) | unique `slug`, 2dsphere `location`, `approvalStatus + type`, `approvalStatus + veganLevel + chain`, unique `source + sourceId`, sparse unique `osmId` (legacy, equal to `sourceId` on OSM rows) |
+| `place_reviews` | `placeId`, `userId`, `rating`, `content`, `visitedMonth`, `showHandle`, `status` | `placeId + status + _id`, sparse `userId`, unique `placeId + userId` while the review is active and `userId` is set |
+| `place_checkins` | `placeId`, `userId`, `month` (server-assigned UTC `YYYY-MM`), `veganLevel`, `rating?`. One row per member per place per month. Public routes return the aggregates on `places` only | unique `placeId + userId + month` while `userId` is set, sparse `userId` |
+| `place_lists` | `userId`, `name`, `placeIds[]`, `isPublic` (stored for future friend sharing; reads stay owner-only) | `userId + _id` |
 | `events` | `title`, `slug`, `type`, `startsAt`, `endsAt`, `location?` (absent on an ingested event with no coordinates), `placeId?`, `venueName`, `address`, `detailsAfterRsvp`, `hostType`, `hostId`, `description`, `coverKey?`, `visibility`, `rsvpCount`, `status` (`draft`, `pending`, `published`, `cancelled`; `pending` is the ingest landing state), `createdBy?` (absent on ingested events), plus provenance | unique `slug`, 2dsphere `location`, `startsAt + status`, `hostType + hostId`, unique `source + sourceId` |
 | `event_rsvps` | `eventId`, `userId`, `status` | unique `eventId + userId`, `userId` |
 
@@ -87,7 +90,7 @@ flowchart TB
 
 | Collection | Key fields | Indexes |
 |---|---|---|
-| `media_items` | `title`, `slug`, `kind`, `year`, `releaseDate?`, `synopsis`, `tagline?`, `posterKey?`, `backdropKey?`, `runtimeMinutes?`, `directors[]`, `featuring[]`, `genres[]`, `rating?`, `ratingCount?`, `contentRating?`, `originalLanguage?`, `watchLinks[] { provider, url, access }`, `trailerYoutubeId?`, `officialSite?`, `tags[]`, `contentWarnings[]`, `actions[] { label, url, type, org? }`, `stats { saves, moved, acted }`, `externalIds { tmdb, wikidata, imdb }`, `featured`, `status`, plus provenance | unique `slug`, `status + featured + _id`, `status + year + _id`, `status + tags`, `status + genres`, `status + watchLinks.access`, unique `source + sourceId` |
+| `media_items` | `title`, `slug`, `kind` (`documentary`, `film`, `series`, `talk`, `short`, `book`), `year` (1000 through 2100, so a pre-1900 book can keep its year), `releaseDate?`, `synopsis`, `tagline?`, `posterKey?`, `backdropKey?`, `runtimeMinutes?`, `directors[]`, `authors[]` (catalogue names, not members), `featuring[]`, `genres[]`, `rating?`, `ratingCount?`, `contentRating?`, `originalLanguage?`, `watchLinks[] { provider, url, access }`, `trailerYoutubeId?`, `officialSite?`, `tags[]`, `contentWarnings[]`, `actions[] { label, url, type, org? }`, `stats { saves, moved, acted }`, `externalIds { tmdb, wikidata, imdb, isbn, openLibrary }`, `featured`, `status`, plus provenance | unique `slug`, `status + kind + _id`, `status + featured + _id`, `status + year + _id`, `status + tags`, `status + genres`, `status + watchLinks.access`, unique `source + sourceId` |
 | `media_collections` | `slug`, `name`, `description`, `order`, `published`, `itemIds[]` (ordered) | unique `slug`, `published + order` |
 | `saved_media` | `mediaId`, `userId` | unique `mediaId + userId`, `userId + _id` |
 | `media_reactions` | `mediaId`, `userId`, `type` (`moved`, `acted`) | unique `mediaId + userId + type` |
@@ -110,7 +113,7 @@ flowchart TB
 
 ## Conventions
 
-- Derived counters (`memberCount`, `rsvpCount`, `ratingAvg`, `reviewCount`, `stats`) are maintained by the service that owns the write and recomputed by a nightly worker. They are never trusted for permission checks.
+- Derived counters (`memberCount`, `rsvpCount`, `ratingAvg`, `reviewCount`, `checkInCount`, `stats`) are maintained by the service that owns the write and recomputed by a nightly worker. They are never trusted for permission checks.
 - TTL indexes carry the retention policy: sessions, magic links, invites, messages, unpinned companion conversations, dead push tokens.
-- Soft delete exists only on `users` (`deletedAt`) so that a deleted account's handle is released after a cooling period. Every other deletion is hard.
+- Soft delete exists only on `users` (`deletedAt`) so that a deleted account's handle is released after a cooling period. Place lists are hard-deleted with the account. Reviews and check-ins stay, with the member reference cleared, so a public count can stay after the person is gone ([ADR-0010](/architecture/adrs/adr-0010-account-deletion)).
 - Geo queries are bounding-box `$geoWithin` on the 2dsphere index. There is no `$near` query anywhere, because `$near` needs a point, and the client never sends one.

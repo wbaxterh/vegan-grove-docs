@@ -31,7 +31,7 @@ Every ingested row carries four fields. They are what makes a re-run safe.
 
 | Field | Meaning |
 |---|---|
-| `source` | String id of the data origin: `osm`, `curated`, `ics:<org-slug>`, `jsonld:<org-slug>`, `wikidata`, `tmdb`. `bot:grokbot` is reserved for content the bot authored itself (guide drafts), not for data it relayed. |
+| `source` | String id of the data origin: `osm`, `curated`, `ics:<org-slug>`, `jsonld:<org-slug>`, `wikidata`, `tmdb`, `openlibrary`. `bot:grokbot` is reserved for content the bot authored itself (guide drafts), not for data it relayed. |
 | `sourceId` | Stable id inside that source. OSM places use the existing `osmId` (`node/123`, `way/456`). |
 | `sourceUrl` | Where a person can see the original. Required on events. |
 | `lastSeenAt` | Set on every call that carries the row, including `unchanged` ones. Rows that stop appearing are never deleted by ingest; admins find them by age. |
@@ -117,7 +117,7 @@ Every call logs the route, the source, and the four counts. Item bodies are neve
 ## Legal principles
 
 - Respect `robots.txt` and each site's terms. Fetch with a descriptive `User-Agent` that names the project and a contact page.
-- Attribute: OpenStreetMap under ODbL, Wikidata under CC0, "Watch providers data by JustWatch" wherever TMDB-sourced watch links render.
+- Attribute: OpenStreetMap under ODbL, Wikidata under CC0, Open Library catalogue metadata under CC0, "Watch providers data by JustWatch" wherever TMDB-sourced watch links render. Covers and posters are re-hosted.
 - No personal data. Organizer names, attendee lists, and personal social accounts are dropped at the source, never stored.
 - No hotlinked images. A poster or photo is uploaded to the app's own bucket first; the API never fetches a remote image.
 - Never scrape Facebook, Instagram, Meetup, or Eventbrite HTML.

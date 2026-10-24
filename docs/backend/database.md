@@ -6,7 +6,7 @@ sidebar_position: 3
 
 # Database
 
-Status: **Scaffolded 2026-09-24**
+Status: **Scaffolded 2026-09-24**, `place_checkins` added 2026-10-24
 
 One MongoDB Atlas M0 cluster in `us-east-1`, accessed only by the API through Mongoose 9. The [data model](/architecture/data-model) page describes the shape and why; this page is the operational view: what collections exist, what indexes are declared, and which fields the [data inventory](/privacy/data-inventory) cares about.
 
@@ -23,7 +23,7 @@ One MongoDB Atlas M0 cluster in `us-east-1`, accessed only by the API through Mo
 |---|---|---|
 | Identity | `users`, `sessions`, `magic_links`, `friend_invites` | `users.email` (login only, never returned to another member), `users.homeArea` (fixed list, never shown outside the owner), `providers[].subject`, `sessions.tokenHash` (sha256, the raw token is never stored) |
 | Social graph | `friendships`, `conversations`, `messages`, `reports` | `friendships` are visible only to the two parties; `messages.ciphertext`, `iv`, `keyId` (AES-256-GCM at rest); `reports.reportedBy` never exposed to the reported |
-| Places | `places`, `place_reviews`, `place_lists`, `organizations` | `places.submittedBy` (nullable, detached on account deletion), `place_reviews.userId` with `showHandle=false` default, `place_lists.isPublic=false` default, `organizations.adminUserIds` never in a response |
+| Places | `places`, `place_reviews`, `place_checkins`, `place_lists`, `organizations` | `places.submittedBy` (nullable, detached on account deletion), `places.checkInCount` and `places.latestCheckInMonth` (public aggregates), `places.lastAgreeingCheckInAt` (not serialized), `place_reviews.userId` with `showHandle=false` default, `place_checkins.userId` (nobody; cleared on account deletion, row kept), `place_lists.isPublic` stored for later friend sharing and not a read grant, `organizations.adminUserIds` never in a response |
 | Community | `groves`, `grove_members`, `events`, `event_rsvps` | `event_rsvps` readable by the organizer only, counts for everyone; `events.detailsAfterRsvp` withholds address until RSVP |
 | Content | `posts`, `comments`, `reactions`, `saved_posts`, `media_items`, `guides` | `posts.visibility` defaults to `friends`; `saved_posts` are private |
 | Personal | `action_log`, `companion_conversations` | both private to the owner, both hard-deleted with the account |
@@ -31,7 +31,7 @@ One MongoDB Atlas M0 cluster in `us-east-1`, accessed only by the API through Mo
 
 ## Unique indexes
 
-`users.email`, `users.handle`, `sessions.tokenHash`, `magic_links.tokenHash`, `friend_invites.code`, `places.slug`, `organizations.slug`, `groves.slug`, `events.slug`, `media_items.slug`, `guides.slug`, `push_tokens.token`, `notification_preferences.userId`, `scheduled_notifications.idempotencyKey`. Compound unique: `friendships (userA, userB)` with the pair sorted before write, `grove_members (groveId, userId)`, `event_rsvps (eventId, userId)`, `reactions (postId, userId)`, `saved_posts (postId, userId)`, `conversations.participantIds` sorted.
+`users.email`, `users.handle`, `sessions.tokenHash`, `magic_links.tokenHash`, `friend_invites.code`, `places.slug`, `organizations.slug`, `groves.slug`, `events.slug`, `media_items.slug`, `guides.slug`, `push_tokens.token`, `notification_preferences.userId`, `scheduled_notifications.idempotencyKey`. Compound unique: `friendships (userA, userB)` with the pair sorted before write, `grove_members (groveId, userId)`, `event_rsvps (eventId, userId)`, `reactions (postId, userId)`, `saved_posts (postId, userId)`, `conversations.participantIds` sorted, `place_reviews (placeId, userId)` while the review is active and the author is still attached, `place_checkins (placeId, userId, month)` while `userId` is still attached.
 
 ## TTL indexes
 

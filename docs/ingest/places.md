@@ -1,12 +1,12 @@
 ---
 title: Ingest places
-description: How places are ingested from OpenStreetMap, community gardens, and the curated sanctuary list, with the tag mapping, the chain and fast-food rules, and the quarterly cadence.
+description: How places are ingested from OpenStreetMap, including farmers markets, community gardens, and the curated sanctuary list, with the tag mapping and the nightly cadence.
 sidebar_position: 2
 ---
 
 # Ingest places
 
-Status: **Proposed 2026-09-29**
+Status: **Proposed 2026-09-29**, farmers markets added to the OSM step 2026-10-24
 
 Three scripts feed `places`: `ingest:places:osm`, `ingest:places:gardens`, and `ingest:sanctuaries`. All three POST to `POST /api/ingest/places` under the [contract](/ingest). Places are the safest resource to automate because a place is a business or a field, never a person. The first import and its history are on the [data sources](/features/places/data-sources) page.
 
@@ -28,23 +28,27 @@ Three scripts feed `places`: `ingest:places:osm`, `ingest:places:gardens`, and `
 
 ## OpenStreetMap
 
-Query the Overpass mirror for `nwr["diet:vegan"~"^(yes|only)$"]` inside the Southern California bounding box with `out center tags`, sending a descriptive `User-Agent`.
+Query the Overpass mirror inside the Southern California bounding box with `out center tags`, sending a descriptive `User-Agent`. Two clauses share that tiled fetch: `nwr["diet:vegan"~"^(yes|only)$"]`, and named `nwr["amenity"="marketplace"]`. The same mirror fallback and the same stop after consecutive failed tiles cover both.
 
 | OSM tags | `type` | `veganLevel` |
 |---|---|---|
 | `diet:vegan=only` | by amenity or shop | `full` |
 | `diet:vegan=yes` | by amenity or shop | `options` |
-| `amenity=restaurant` | `restaurant` | |
+| `amenity=restaurant`, `amenity=food_court` | `restaurant` | |
 | `amenity=fast_food` with `diet:vegan=only` | `restaurant` | `full` |
 | `amenity=fast_food` with `diet:vegan=yes` | skipped | |
 | `amenity=cafe`, `amenity=ice_cream` | `cafe` | |
+| `amenity=bar`, `amenity=pub` | `venue` | |
 | `shop=supermarket`, `greengrocer`, `health_food`, `convenience` | `grocery` | |
+| named farmers or produce `amenity=marketplace` | `grocery`, tag `market:farmers`, `chain` false | `options`, or `full` when `diet:vegan=only` |
 | any other `shop=*` | `shop` | |
-| anything else | skipped and counted | |
+| anything else, including flea, craft, and antique markets | skipped and counted | |
+
+A marketplace counts as farmers or produce when `marketplace` or `marketplace:type` is a farmers or produce value, or when the name reads as a farmers market, produce market, greenmarket, or farm stand. A cafe that is also tagged `diet:vegan` stays a cafe: the diet mapping runs when the feature is not a farmers market. The schedule is the nightly OSM step on the [automations page](/ingest/automations), 12:42 AM Pacific. Farmers markets are inside that step. Six tiles in a row failing on both Overpass mirrors abort the run; the next night retries.
 
 The fast-food rule in one line: a fast-food place with a vegan option is not worth a pin, a fully vegan one is.
 
-Chains: `brand` or `brand:wikidata` present sets `chain: true`. The public API hides chains unless the caller asks for them (`includeChains=true`) and never deletes them, because a fully vegan chain is still useful.
+Chains: `brand` or `brand:wikidata` present sets `chain: true`, except on a farmers market, where `chain` stays false. The public API hides chains unless the caller asks for them (`includeChains=true`) and never deletes them, because a fully vegan chain is still useful.
 
 Richer tags go into `tags[]` as `key:value` strings, so the client can filter without a schema change: `cuisine:thai` (one tag per value of a semicolon-separated `cuisine`), `wheelchair:yes`, `outdoor_seating:yes`, `takeaway:yes`, `delivery:yes`. Only the values `yes`, `no`, and `limited` are kept for the last four.
 
@@ -64,8 +68,8 @@ Entries without coordinates are geocoded with Nominatim at no more than one requ
 
 | Script | Cadence | Notes |
 |---|---|---|
-| `ingest:places:osm` | quarterly | `--dry-run`, read the counts, then run |
-| `ingest:places:gardens` | quarterly | same run day as OSM |
+| `ingest:places:osm` | nightly, 12:42 AM Pacific | `--dry-run`, read the counts, then run. Includes farmers and produce markets. An Overpass outage (six tiles in a row failing on both mirrors) aborts the run for the next night |
+| `ingest:places:gardens` | nightly | same run as OSM |
 | `ingest:sanctuaries` | when the JSON changes | small, safe to run any time |
 
 OpenStreetMap data is ODbL. A place with `source: osm` shows "Data from OpenStreetMap contributors" on its page, and the map tiles carry the OSM attribution in the style. Nominatim results are also ODbL and are used only to place a curated pin.

@@ -28,7 +28,9 @@ The App Store requires in-app account deletion for apps with account creation. M
 | `posts`, `comments` | Deleted, including media keys queued for S3 and Bunny deletion |
 | `messages` | Messages the member sent are deleted; conversations with no remaining participants are deleted |
 | `action_log`, `companion_conversations` | Deleted |
+| `place_lists` | Deleted |
 | `place_reviews`, `places` (submitted) | Kept, detached: `userId` or `submittedBy` set to null, `showHandle` forced false |
+| `place_checkins` | Kept, detached: `userId` unset so the aggregate count stays. The row is not a public visit list |
 | `reports` | Kept for moderation with `reportedBy` nulled |
 | Backups | Nightly dumps age out in 30 days; a deleted member's data is gone from backups within that window |
 
@@ -49,4 +51,4 @@ Media deletion runs asynchronously through a worker with retries; the record del
 ### Negative
 
 - Deleted content leaves gaps in other members' feeds and conversations. Accepted.
-- Reviews survive detached, which keeps Places useful. Documented on the privacy page.
+- Reviews survive detached, which keeps Places useful. Check-ins survive detached the same way, so the public count stays. Documented on the privacy page.
