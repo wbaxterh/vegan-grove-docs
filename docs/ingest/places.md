@@ -1,6 +1,6 @@
 ---
 title: Ingest places
-description: How places are ingested from OpenStreetMap, including farmers markets, community gardens, and the curated sanctuary list, with the tag mapping and the quarterly cadence.
+description: How places are ingested from OpenStreetMap, including farmers markets, community gardens, and the curated sanctuary list, with the tag mapping and the nightly cadence.
 sidebar_position: 2
 ---
 
@@ -44,7 +44,7 @@ Query the Overpass mirror inside the Southern California bounding box with `out 
 | any other `shop=*` | `shop` | |
 | anything else, including flea, craft, and antique markets | skipped and counted | |
 
-A marketplace counts as farmers or produce when `marketplace` or `marketplace:type` is a farmers or produce value, or when the name reads as a farmers market, produce market, greenmarket, or farm stand. A cafe that is also tagged `diet:vegan` stays a cafe: the diet mapping runs when the feature is not a farmers market. The schedule is the quarterly OSM step on the [automations page](/ingest/automations). Farmers markets are inside that step.
+A marketplace counts as farmers or produce when `marketplace` or `marketplace:type` is a farmers or produce value, or when the name reads as a farmers market, produce market, greenmarket, or farm stand. A cafe that is also tagged `diet:vegan` stays a cafe: the diet mapping runs when the feature is not a farmers market. The schedule is the nightly OSM step on the [automations page](/ingest/automations), 12:42 AM Pacific. Farmers markets are inside that step. Six tiles in a row failing on both Overpass mirrors abort the run; the next night retries.
 
 The fast-food rule in one line: a fast-food place with a vegan option is not worth a pin, a fully vegan one is.
 
@@ -68,8 +68,8 @@ Entries without coordinates are geocoded with Nominatim at no more than one requ
 
 | Script | Cadence | Notes |
 |---|---|---|
-| `ingest:places:osm` | quarterly | `--dry-run`, read the counts, then run. Includes farmers and produce markets |
-| `ingest:places:gardens` | quarterly | same run day as OSM |
+| `ingest:places:osm` | nightly, 12:42 AM Pacific | `--dry-run`, read the counts, then run. Includes farmers and produce markets. An Overpass outage (six tiles in a row failing on both mirrors) aborts the run for the next night |
+| `ingest:places:gardens` | nightly | same run as OSM |
 | `ingest:sanctuaries` | when the JSON changes | small, safe to run any time |
 
 OpenStreetMap data is ODbL. A place with `source: osm` shows "Data from OpenStreetMap contributors" on its page, and the map tiles carry the OSM attribution in the style. Nominatim results are also ODbL and are used only to place a curated pin.

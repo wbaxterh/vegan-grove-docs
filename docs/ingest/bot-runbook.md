@@ -18,7 +18,7 @@ This page is the operating procedure for the automation (working name grokbot) t
 | Organizations and guides | `ingest:organizations`, `ingest:guides` | monthly, day 1 |
 | Media | `ingest:media:seed`, `ingest:media:wikidata`, `ingest:media:tmdb` | weekly, Sunday |
 | Books | `ingest:media:openlibrary` (`--dry-run` searches and prints counts, then a real run posts) | monthly, the 3rd |
-| Places | `ingest:places:osm` (dry run, then real; farmers and produce markets are inside this step), `ingest:places:gardens`, `ingest:places:curated` | quarterly, the 2nd of January, April, July, October |
+| Places | `ingest:places:osm` (dry run, then real; farmers and produce markets are inside this step), `ingest:places:gardens`, `ingest:places:curated` | nightly, 12:42 AM Pacific. Six Overpass tiles failing in a row on both mirrors aborts the run; the next night retries |
 
 The exact cron lines and commands live on the [automations page](/ingest/automations) and in [`/automations.json`](/automations.json).
 

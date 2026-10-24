@@ -78,4 +78,4 @@ Covers are downloaded, stripped of EXIF, XMP, and IPTC, and stored in the media 
 
 ## Refresh
 
-Quarterly: a run of the importer with `--dry-run`, review of the counts, then a real run. New OSM places enter as `pending`. The schedule and the stop conditions for an automated run are in the [bot runbook](/ingest/bot-runbook).
+Nightly at 12:42 AM Pacific: a run of the importer with `--dry-run`, then the real run. Farmers markets are in that same run. Six Overpass tiles failing in a row on both mirrors abort the importer, and the next night retries. The schedule and the stop conditions are on the [automations page](/ingest/automations).

@@ -99,16 +99,18 @@ Environment: `API_URL` and `INGEST_KEY`. Success: both steps exit 0 with `reject
 
 ## Job 4: places refresh (grokbot)
 
-Purpose: re-read OpenStreetMap for every vegan place, farmers market, community garden and curated sanctuary so hours, phone numbers and new openings stay current. Quarterly, because the data moves slowly and the Overpass service is shared with everyone.
+Purpose: re-read OpenStreetMap for every vegan place, farmers market, community garden and curated sanctuary so hours, phone numbers and new openings stay current. Nightly, at 12:42 AM Pacific.
 
 ```cron
-# places, quarterly, the 2nd of January, April, July and October at 06:00 Pacific
-0 6 2 1,4,7,10 *  cd $VG_API && npm run --silent ingest:places:osm -- --dry-run && npm run --silent ingest:places:osm && npm run --silent ingest:places:gardens && npm run --silent ingest:places:curated
+# places, nightly, 12:42 AM Pacific
+42 0 * * *  cd $VG_API && npm run --silent ingest:places:osm -- --dry-run && npm run --silent ingest:places:osm && npm run --silent ingest:places:gardens && npm run --silent ingest:places:curated
 ```
 
 Farmers and produce markets run inside this step. `ingest:places:osm` pulls them in the same tiled Overpass run as the `diet:vegan` places: named `amenity=marketplace` features that are farmers or produce markets. They land as `grocery` with the tag `market:farmers`, vegan level `options` unless `diet:vegan=only`, and with `chain` false. Flea, craft, and antique markets are left out. The same ODbL attribution, the same mirror fallback, and the same stop after consecutive failed tiles apply. The mapping is on the [places ingest page](/ingest/places) and the [data sources page](/features/places/data-sources).
 
-Environment: `API_URL` and `INGEST_KEY`. The scripts talk to the ingest endpoint like every other job; OSM is on the trusted list, so refreshed rows publish, and the curated file is the source for sanctuaries and gardens. The dry run comes first on purpose: its count must sit within 25 percent of the last real run, or the job stops and reports. Allow up to two hours; Overpass is queried one tile at a time at one request per second, and the importer gives up on its own when the service is not answering, which is a "try tomorrow", not an alert.
+Environment: `API_URL` and `INGEST_KEY`. The scripts talk to the ingest endpoint like every other job; OSM is on the trusted list, so refreshed rows publish, and the curated file is the source for sanctuaries and gardens. The dry run comes first on purpose: its count must sit within 25 percent of the last real run, or the job stops and reports. Allow up to two hours; Overpass is queried one tile at a time at one request per second.
+
+The nightly cadence relies on an Overpass outage guard. A tile that fails on both mirrors is skipped, and those rows keep the last successful values. Six tiles in a row failing on both mirrors aborts the importer with "Overpass is not answering". That abort is a retry the next night, not an alert. The same guard covers the farmers markets, because they ride this Overpass run.
 
 ## Job 5: Open Library books (OpenClaw)
 

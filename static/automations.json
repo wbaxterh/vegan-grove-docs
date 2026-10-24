@@ -71,7 +71,7 @@
     {
       "name": "places-refresh",
       "owner": "grokbot",
-      "schedule": "0 6 2 1,4,7,10 *",
+      "schedule": "42 0 * * *",
       "commands": [
         "npm run --silent ingest:places:osm -- --dry-run",
         "npm run --silent ingest:places:osm",
@@ -80,10 +80,10 @@
       ],
       "success": "the dry run count is within 25 percent of the last real run before the real run starts; every step exits 0",
       "stop": [
-        "the OSM importer reporting that Overpass is not answering (try again the next day)",
+        "the OSM importer aborting because six tiles in a row failed on both mirrors (Overpass outage; retry the next night, do not alert)",
         "a dry-run count that moved more than 25 percent"
       ],
-      "notes": "slow by design: Overpass is queried one tile at a time at one request per second; allow up to two hours. The OSM step also imports named farmers and produce markets in the same tiled run (type grocery, tag market:farmers), with the same mirror fallback and the same stop after consecutive failed tiles"
+      "notes": "nightly at 12:42 AM Pacific. Overpass is queried one tile at a time at one request per second; allow up to two hours. A skipped tile keeps last run's rows. The OSM step also imports named farmers and produce markets in the same tiled run (type grocery, tag market:farmers), under the same outage guard"
     },
     {
       "name": "openlibrary-books",
