@@ -6,7 +6,7 @@ sidebar_position: 7
 
 # Bot runbook
 
-Status: **Proposed 2026-09-29**
+Status: **Proposed 2026-09-29**, books job added 2026-10-24
 
 This page is the operating procedure for the automation (working name grokbot) that runs ingest on a schedule. It assumes the [contract](/ingest) and the resource pages have been read. Where this page and a resource page disagree, the resource page wins on mapping and this page wins on operations.
 
@@ -17,7 +17,8 @@ This page is the operating procedure for the automation (working name grokbot) t
 | Events | `ingest:events:ics`, `ingest:events:jsonld`, `ingest:events:mobilize`, `ingest:events:tribe`, `ingest:events:json`, `ingest:events:dxe` | daily, early morning Pacific |
 | Organizations and guides | `ingest:organizations`, `ingest:guides` | monthly, day 1 |
 | Media | `ingest:media:seed`, `ingest:media:wikidata`, `ingest:media:tmdb` | weekly, Sunday |
-| Places | `ingest:places:osm` (dry run, then real), `ingest:places:gardens`, `ingest:places:curated` | quarterly, the 2nd of January, April, July, October |
+| Books | `ingest:media:openlibrary` (`--dry-run` searches and prints counts, then a real run posts) | monthly, the 3rd |
+| Places | `ingest:places:osm` (dry run, then real; farmers and produce markets are inside this step), `ingest:places:gardens`, `ingest:places:curated` | quarterly, the 2nd of January, April, July, October |
 
 The exact cron lines and commands live on the [automations page](/ingest/automations) and in [`/automations.json`](/automations.json).
 

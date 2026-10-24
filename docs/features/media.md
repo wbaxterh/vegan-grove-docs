@@ -71,7 +71,7 @@ Web: `/media`, `/media/[slug]`, `/media/collections/[slug]`, `/app/watchlist`. M
 
 ## Curation
 
-Titles enter through the seed file or the admin API, are enriched from TMDB, and land `draft` unless the source is trusted. Admins rewrite the synopsis in the app's own words, check the watch links, set warnings and actions, place the title on a shelf, and publish. Items whose links all break are unpublished rather than left broken. The [automation](/ingest/automations) refreshes providers and posters on a schedule and never publishes anything.
+Titles enter through the seed file, Wikidata, TMDB, or Open Library, or through the admin API, and land `draft` unless the source is trusted. Open Library adds `kind: book` rows (authors, year, one ISBN) with covers re-hosted in the media bucket. Admins rewrite the synopsis in the app's own words, check the watch links, set warnings and actions, place the title on a shelf, and publish. Items whose links all break are unpublished rather than left broken. The [automation](/ingest/automations) refreshes providers, posters, and books on a schedule and never publishes anything.
 
 ## Next milestone
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.vegangrove.org/automations.schema.json",
   "version": 1,
-  "updated": "2026-10-06",
+  "updated": "2026-10-24",
   "docs": "https://docs.vegangrove.org/ingest/automations",
   "runbook": "https://docs.vegangrove.org/ingest/bot-runbook",
   "repository": "https://github.com/wbaxterh/vegan-grove-api",
@@ -83,7 +83,20 @@
         "the OSM importer reporting that Overpass is not answering (try again the next day)",
         "a dry-run count that moved more than 25 percent"
       ],
-      "notes": "slow by design: Overpass is queried one tile at a time at one request per second; allow up to two hours"
+      "notes": "slow by design: Overpass is queried one tile at a time at one request per second; allow up to two hours. The OSM step also imports named farmers and produce markets in the same tiled run (type grocery, tag market:farmers), with the same mirror fallback and the same stop after consecutive failed tiles"
+    },
+    {
+      "name": "openlibrary-books",
+      "owner": "openclaw",
+      "schedule": "30 6 3 * *",
+      "commands": ["npm run --silent ingest:media:openlibrary"],
+      "success": "the step exits 0 with rejected equal to 0; new rows land draft because openlibrary is not trusted",
+      "stop": [
+        "Open Library search failing after retries",
+        "a subject returning zero works",
+        "a subject truncated at the page cap"
+      ],
+      "notes": "monthly. Supports --dry-run, which searches and prints counts without posting. One second between Open Library calls, including cover downloads. A cover already in the bucket is skipped. Covers are re-hosted, never hotlinked. The host data refresh runs this step after the TMDB step"
     }
   ],
   "never": [

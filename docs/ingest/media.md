@@ -1,14 +1,14 @@
 ---
 title: Ingest media
-description: How the media library is seeded from Wikidata and enriched from TMDB, with the SPARQL query, the poster and watch-provider rules, and the monthly cadence.
+description: How the media library is seeded from Wikidata, enriched from TMDB, and filled with Open Library books, including poster rules and cadence.
 sidebar_position: 5
 ---
 
 # Ingest media
 
-Status: **Proposed 2026-09-29**
+Status: **Proposed 2026-09-29**, Open Library books added 2026-10-24
 
-The media library is seeded, not scraped. `ingest:media:wikidata` finds films about the cause and `ingest:media:tmdb` enriches them. Both POST to `POST /api/ingest/media` under the [contract](/ingest). Items land `draft`; an admin reads the synopsis, checks the watch links, and publishes. Nothing here hosts a film.
+The media library is seeded, not scraped. `ingest:media:wikidata` finds films about the cause, `ingest:media:tmdb` enriches them, and `ingest:media:openlibrary` adds books. All three POST to `POST /api/ingest/media` under the [contract](/ingest). Items land `draft` unless the source is trusted; an admin reads the synopsis, checks the links, and publishes. Nothing here hosts a film or a book.
 
 ## Wikidata
 
@@ -75,7 +75,7 @@ Poster upload needs the media bucket's write role, which the bot never holds. Wh
 | Field | Meaning |
 |---|---|
 | `tags` | topic tags from the vocabulary `ethics`, `health`, `environment`, `activism`, `investigation`, plus free tags; the automatic home rows are built from the vocabulary |
-| `kind` | `documentary` (default), `film`, `series`, `talk` or `short` |
+| `kind` | `documentary` (default), `film`, `series`, `talk`, `short`, or `book` |
 | `contentWarnings` | short phrases such as "graphic footage of animal suffering"; shown on the item page, never hidden behind a click |
 | `officialSite` | the film's own site |
 | `watchLinks` | only official free streams, with `access: free`; TMDB providers are appended after them, never in front |
@@ -92,13 +92,34 @@ Every script that reads the file goes through one mapper (`toItem` in the seed s
 
 `ingest:media:seed`, `ingest:media:wikidata` and `ingest:media:tmdb` write the same rows in turn, each owning different fields. The seed re-sends the editorial layer (tags, warnings, official site, the free official stream, actions) and so replaces `watchLinks` with the curated links and drops the two attribution tags until the TMDB step runs again. Run the three in that order, as the [automation](/ingest/automations) and the host's data refresh do; a seed run on its own leaves the library without providers until the next TMDB pass. A field a script does not send is never touched, so a run without a synopsis keeps the one TMDB wrote.
 
+## Open Library books
+
+`ingest:media:openlibrary` searches the Open Library Search API for `subject:veganism` and `subject:"animal rights"`. Catalogue metadata is CC0. Each work becomes one `book` row under `source: openlibrary`, upserted by the work id, and a work found under both subjects keeps both topic tags. `openlibrary` stays out of `TRUSTED_SOURCES`, so the rows land `draft`.
+
+| Media item | From |
+|---|---|
+| `sourceId` | the Open Library work id |
+| `title` | the work title |
+| `kind` | `book` |
+| `authors` | catalogue names, at most ten. These are not members |
+| `year` | `first_publish_year`, kept when it falls between 1000 and 2100 |
+| `externalIds.isbn` | one ISBN, an ISBN-13 when a valid one is present |
+| `externalIds.openLibrary` | the same work id |
+| `tags` | `open-library`, plus `veganism` or `animal-rights` |
+| `sourceUrl` | the Open Library work page |
+| `posterKey` | the cover, after it is downloaded, stripped of EXIF, XMP, and IPTC, and stored in the media bucket |
+
+The script waits one second between Open Library calls, including cover downloads, and skips a cover already in the bucket. The API receives the object key. Covers are re-hosted rather than hotlinked. When the bucket role is absent, covers are skipped and the book rows still post. `--dry-run` searches, maps, and prints counts without posting.
+
+The command runs monthly, on the [automations page](/ingest/automations), and the host data refresh runs it after the TMDB step. It does not rewrite Wikidata or seed rows: those use other `(source, sourceId)` keys.
+
 ## What is never done
 
 - No film is hosted or proxied. `watchLinks` leave the app.
 - Trailers are YouTube ids only, embedded through `youtube-nocookie.com`, loaded on click.
-- No hotlinking of TMDB or Wikimedia images.
+- No hotlinking of TMDB, Wikimedia, or Open Library images.
 - No scraping of streaming sites or JustWatch pages. TMDB's API with a key is the only provider source.
 
 ## Cadence
 
-Weekly, as the media job on the [automations page](/ingest/automations). The Wikidata query returns a few dozen rows, and the TMDB step makes two calls per item, well inside TMDB's limits at that size. Admins verify watch links quarterly, per the [media feature page](/features/media).
+The film steps run weekly, as the media job on the [automations page](/ingest/automations). The Wikidata query returns a few dozen rows, and the TMDB step makes two calls per item, well inside TMDB's limits at that size. Open Library books run monthly on that same page: about 1,600 veganism works and about 1,400 animal-rights works at the time of the change, with overlap, paced at one request per second. Admins verify watch links quarterly, per the [media feature page](/features/media). Books wait in `draft` until an admin publishes them.

@@ -6,13 +6,13 @@ sidebar_position: 2
 
 # API endpoints
 
-Status: **Scaffolded 2026-09-24**, ingest endpoint and public reads added 2026-09-29 per the [ingest contract](/ingest)
+Status: **Scaffolded 2026-09-24**, ingest endpoint and public reads added 2026-09-29 per the [ingest contract](/ingest); place lists, reviews, check-ins, and `POST /api/reports` implemented 2026-10-24
 
 All routes live under `/api` on `https://api.vegangrove.org`; health is `/healthz`. Auth is `Authorization: Bearer <session token>`. Every error is `{ error: { code, message } }` ([error handling](/engineering/error-handling)). Every list is `{ items, nextCursor }` with an opaque cursor over `_id`; there is no `page` or `skip`, and a bad cursor is a `400 invalid_cursor`.
 
 Auth levels: **public** (no session), **member** (any session), **organizer** (grove organizer or organization admin for the host), **admin** (`role: admin`, checked in the database per request), **ingest** (the `X-Ingest-Key` header, compared in constant time against `INGEST_KEY`; it writes only through `/api/ingest/*` and reads nothing).
 
-**Scaffold status:** auth, me, places, admin place approval, healthz, stats, the public reads for events, organizations, groves, media, and guides, and the ingest endpoint are implemented with tests. Every other route is mounted, validates its input, and returns `501 { error: { code: 'not_implemented' } }` until its milestone ([milestones](/roadmap/milestones)).
+**Scaffold status:** auth, me, places (including reviews, check-ins, and owner-only lists), admin place approval, admin review hide and restore, `POST /api/reports`, healthz, stats, the public reads for events, organizations, groves, media, and guides, and the ingest endpoint are implemented with tests. Every other route is mounted, validates its input, and returns `501 { error: { code: 'not_implemented' } }` until its milestone ([milestones](/roadmap/milestones)). The admin report queue is still `501`.
 
 ## Auth and account (implemented)
 
@@ -46,10 +46,25 @@ Place and event responses carry `location` as `{ lng, lat }`. GeoJSON (`{ type: 
 |---|---|---|
 | `GET /api/places?bbox=w,s,e,n&type=&veganLevel=&includeChains=&q=&cursor=&limit=` | public | approved places only; `veganLevel` defaults to `full`, chains hidden unless `includeChains=true`, fully vegan places sort first |
 | `GET /api/places/map-pins?bbox=w,s,e,n&type=&veganLevel=&includeChains=` | public | pins only (`slug`, `name`, `type`, `veganLevel`, `chain`, `location`), no cursor, capped at 1,000 with `truncated: true` past the cap |
-| `GET /api/places/:slug` | public | the full record with `phone`, `postcode`, `hours`, `tags`, and the source attribution |
+| `GET /api/places/:slug` | public | the full record with `phone`, `postcode`, `hours`, `tags`, the source attribution, and the check-in aggregate (`checkInCount`, `latestCheckInMonth`, `verification`). This read does not load `place_checkins` |
 | `POST /api/places` | member | created as `pending` |
-| `GET`, `POST /api/places/:id/reviews` | public, member | 501 |
-| `GET`, `POST /api/place-lists`, `PATCH`, `DELETE /api/place-lists/:id` | member | private by default, 501 |
+| `GET /api/places/:id/reviews` | public; session optional | `{ items, nextCursor }` of active reviews on an approved place. `404` when the place is missing or not approved. `mine` is present only for a session, and the response is then `private, no-store` |
+| `POST /api/places/:id/reviews` `{ rating, content?, visitedMonth?, showHandle? }` | member | `201 { review }`. `409 review_exists` when that member already has an active review of the place |
+| `GET /api/places/:id/check-ins` | public | `{ checkInCount, latestCheckInMonth, verification }` |
+| `POST /api/places/:id/check-ins` `{ veganLevel, rating? }` | member | `201` with the same aggregate. `409 already_checked_in` for a second check-in at that place in the current UTC month. The server assigns the month. The optional rating is stored and never returned |
+| `GET /api/place-lists` | member | `{ items, nextCursor }` of the caller's lists. `Cache-Control: private, no-store` |
+| `POST /api/place-lists` `{ name, placeIds?, isPublic? }` | member | `201 { list }` |
+| `GET /api/place-lists/:id` | member | `{ list }`, or `404` when the list is missing or belongs to someone else |
+| `PATCH /api/place-lists/:id` | member | `{ list }`, or `404` on the same rule |
+| `DELETE /api/place-lists/:id` | member | `204`, or `404` |
+| `POST /api/place-lists/:id/places` `{ placeId }` | member | `{ list }`. Idempotent. `404` when the list is not the caller's or the place does not exist. `400 list_full` past 500 places |
+| `DELETE /api/place-lists/:id/places/:placeId` | member | `{ list }`. Idempotent |
+
+A list is `{ id, name, isPublic, placeIds, places, createdAt, updatedAt }`. `places` embeds the public place shape, in list order, including a pending place the owner saved. There is no user id on the list. `isPublic` is stored for future friend sharing and is not published yet: there is no public list route, and another member's list is `404` even when the flag is true.
+
+A public review is `{ id, placeId, rating, content, visitedMonth, showHandle, handle, createdAt, mine? }`. `handle` is set only when `showHandle` was true and the account still exists. No user id, no email, and no follower count.
+
+`verification` is `verified` when a check-in in the last 180 days agreed with the place's vegan level, otherwise `unverified`. The check-in response has no items, no user ids, and no handles. Disputed is not a value the API returns yet ([verification](/features/places/verification)).
 
 ## Events, groves, organizations (public reads implemented)
 
@@ -78,7 +93,7 @@ Place and event responses carry `location` as `{ lng, lat }`. GeoJSON (`{ type: 
 | `GET`, `POST /api/posts/:id/comments` | member | |
 | `POST`, `DELETE /api/posts/:id/save` | member | |
 | `GET /api/handles/:handle/posts` | public | public posts only, per [ADR 0004](/architecture/adrs/adr-0004-profiles-never-public) |
-| `POST /api/reports` | member | |
+| `POST /api/reports` `{ targetType, targetId, reason }` | member | stores a report. The reporter is the session. The response is `{ report: { id, targetType, targetId, reason, status, createdAt } }` with no `reportedBy`. A review target must be an active review (`404` otherwise). Reporting your own review is `403`. A second open report of the same target is `409 already_reported`. A place target must exist. Posts, comments, users, and messages are stored without a lookup, so this route cannot probe private rows |
 
 ## Uploads, messages, media, guides, actions, companion
 
@@ -128,7 +143,9 @@ Every list takes `cursor` and `limit` (1 to 100, default 50). The rest are per r
 | Route | Auth | Note |
 |---|---|---|
 | `GET /api/admin/places/pending`, `PUT /api/admin/places/:id/approve`, `.../reject` | admin | implemented |
+| `GET /api/admin/reviews?status=` | admin | `{ items, nextCursor }`, including removed reviews. Implemented |
+| `PUT /api/admin/reviews/:id` `{ status }` | admin | `status` is `active` or `removed`. `{ review }`. Restoring is `409 review_exists` when that member already has another active review. Recomputes `ratingAvg` and `reviewCount`. Implemented |
 | `GET`, `POST /api/admin/media`, `PATCH`, `DELETE /api/admin/media/:id` | admin | every status; a hand-set field is locked against ingest; implemented |
 | `GET`, `POST /api/admin/media/collections`, `PATCH /api/admin/media/collections/:id` | admin | shelves with an ordered `itemIds`; implemented |
 | CRUD `/api/admin/guides` | admin | 501 |
-| `GET /api/admin/reports`, `PUT /api/admin/reports/:id` | admin | 501 |
+| `GET /api/admin/reports`, `PUT /api/admin/reports/:id` | admin | 501. Filing a report is implemented; the queue is not |
